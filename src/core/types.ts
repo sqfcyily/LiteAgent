@@ -31,7 +31,7 @@ export type EngineEvent =
   | { type: 'thinking'; content: string }
   | { type: 'tool_start'; toolName: string; args: string }
   | { type: 'tool_end'; toolName: string; result: string }
-  | { type: 'completed'; content: string }
+  | { type: 'completed'; content: string; finalMessages: Message[] }
   | { type: 'error'; error: Error };
 
 // Context payload for tools

@@ -46,21 +46,9 @@ async function main() {
     language: process.env.LANGUAGE || 'en-US',
     channel: process.env.CHANNEL || 'cli',
     feishuAppId: process.env.FEISHU_APP_ID || '',
-    feishuAppSecret: process.env.FEISHU_APP_SECRET || ''
+    feishuAppSecret: process.env.FEISHU_APP_SECRET || '',
+    maxLoops: 10
   };
-
-  console.log(`\n🚀 PixPal Starting... [Model: ${config.model}, Channel: ${config.channel}]\n`);
-
-  let activeChannel: Channel;
-
-  // Mount the selected channel
-  if (config.channel === 'feishu') {
-    activeChannel = new FeishuChannel(config.feishuAppId, config.feishuAppSecret);
-  } else {
-    activeChannel = new CLIChannel();
-  }
-
-  await activeChannel.connect();
 
   const tools = [{
     type: 'function' as const,
@@ -75,28 +63,20 @@ async function main() {
     }
   }];
 
-  // State: Maintain context across the entire session
-  const sessionMessages: any[] = [
-    { role: 'system', content: `You are PixPal, a helpful pixel-art assistant. Always use tools when necessary. Language preference: ${config.language}.` }
-  ];
+  console.log(`\n🚀 PixPal Starting... [Model: ${config.model}, Channel: ${config.channel}]\n`);
 
-  // Infinite REPL Loop
-  while (true) {
-    const userInput = await askQuestion('\n> ');
-    if (!userInput.trim()) continue;
-    if (userInput.trim().toLowerCase() === 'exit' || userInput.trim().toLowerCase() === 'quit') {
-      console.log('Goodbye! 👋');
-      process.exit(0);
-    }
+  let activeChannel: Channel;
 
-    sessionMessages.push({ role: 'user', content: userInput });
-
-    // Run engine and pass the full message history
-    const stream = runEngine(sessionMessages, tools, config);
-
-    // Block and wait for the channel to render the stream fully before asking for next input
-    await activeChannel.renderEngineStream(userInput, stream);
+  // Mount the selected channel
+  if (config.channel === 'feishu') {
+    activeChannel = new FeishuChannel(config.feishuAppId, config.feishuAppSecret);
+  } else {
+    // Pass config and tools into CLIChannel directly
+    activeChannel = new CLIChannel(config, tools);
   }
+
+  // The connect method now blocks and handles the entire interactive loop inside React
+  await activeChannel.connect();
 }
 
 main().catch(err => {

@@ -1,85 +1,158 @@
 import React, { useState, useEffect } from 'react';
-import { render, Box, Text } from 'ink';
-import { DioramaStage, DioramaState } from '../../ui/components/Diorama/Stage.js';
+import { render, Box, Text, Static } from 'ink';
+import TextInput from 'ink-text-input';
+import { runEngine, EngineConfig } from '../../core/engine.js';
 import type { Channel } from '../base.js';
-import type { EngineEvent } from '../../core/types.js';
+import type { EngineEvent, Message, ToolSchema } from '../../core/types.js';
 
 export class CLIChannel implements Channel {
-  private renderInstance: any;
+  private config: EngineConfig;
+  private tools: ToolSchema[];
+
+  constructor(config: EngineConfig, tools: ToolSchema[]) {
+    this.config = config;
+    this.tools = tools;
+  }
 
   async connect(): Promise<void> {
     console.clear();
-    console.log('✨ PixPal CLI Initialized. Type your message below.\n');
+    const { waitUntilExit } = render(<PixPalApp config={this.config} tools={this.tools} />);
+    await waitUntilExit();
   }
 
-  onMessage(callback: (message: string) => void): void {
-    // In a real CLI, we use readline for user input. Handled directly in index.ts for loop control.
-  }
-
-  async sendMessage(content: string): Promise<string> {
-    // Message rendering is handled by React UI
-    return 'cli-msg-1';
-  }
-
-  async updateMessage(messageId: string, content: string): Promise<void> {
-    // Updates are handled natively by React/Ink via state changes.
-  }
-
-  async renderEngineStream(prompt: string, stream: AsyncGenerator<EngineEvent, void, unknown>): Promise<void> {
-    // Unmount previous instance if exists to keep terminal clean
-    if (this.renderInstance) {
-      this.renderInstance.unmount();
-    }
-    
-    this.renderInstance = render(<CLIRootApp prompt={prompt} stream={stream} />);
-    
-    // Wait until the stream finishes
-    for await (const event of stream) {
-       // Loop consumed by React hook inside CLIRootApp
-    }
-  }
+  // Not used in this persistent UI model, handled inside React
+  onMessage() {}
+  async sendMessage() { return ''; }
+  async updateMessage() {}
+  async renderEngineStream() {}
 }
 
 // ---------------------------------------------------------
 // React Root for the CLI Channel
 // ---------------------------------------------------------
-const CLIRootApp: React.FC<{ prompt: string, stream: AsyncGenerator<EngineEvent, void, unknown> }> = ({ prompt, stream }) => {
-  const [dioramaState, setDioramaState] = useState<DioramaState>({ status: 'Pending', message: 'Ready...' });
-  const [logs, setLogs] = useState<string[]>([]);
+const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ config, tools }) => {
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'system', content: `You are PixPal, a helpful pixel-art assistant. Always use tools when necessary. Language preference: ${config.language || 'en-US'}.` }
+  ]);
+  
+  const [input, setInput] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [statusText, setStatusText] = useState('Ready');
+  const [currentStream, setCurrentStream] = useState('');
+  
+  // Pixel Art Animation state
+  const [frameIdx, setFrameIdx] = useState(0);
+  
+  // Retro Pixel Robot Art
+  const idleFrames = [
+    " ▄▀▀▄ \n █--█ \n ▀▄▄▀ ",
+    " ▄▀▀▄ \n █oo█ \n ▀▄▄▀ "
+  ];
+  const workFrames = [
+    " ▄▀▀▄ \n █><█ \n ▀▄▄▀ ",
+    " ▄▀▀▄ \n █><█ \n ▀▄▄▀ "
+  ];
 
   useEffect(() => {
-    const consumeStream = async () => {
+    const timer = setInterval(() => {
+      setFrameIdx(prev => (prev + 1) % 2);
+    }, isProcessing ? 200 : 800);
+    return () => clearInterval(timer);
+  }, [isProcessing]);
+
+  const handleSubmit = async (text: string) => {
+    if (!text.trim()) return;
+    if (text.trim().toLowerCase() === 'exit' || text.trim().toLowerCase() === 'quit') {
+      process.exit(0);
+    }
+
+    const newMessages = [...messages, { role: 'user' as const, content: text }];
+    setMessages(newMessages);
+    setInput('');
+    setIsProcessing(true);
+    setStatusText('Thinking...');
+    setCurrentStream('');
+
+    try {
+      const stream = runEngine(newMessages, tools, config);
       for await (const event of stream) {
         switch (event.type) {
           case 'thinking':
-            setDioramaState(prev => ({ ...prev, status: 'In_Progress', message: event.content }));
+            setStatusText('Thinking...');
+            setCurrentStream(event.content);
             break;
           case 'tool_start':
-            setDioramaState(prev => ({ ...prev, status: 'In_Progress', message: 'Using tool...', toolInfo: `Executing [${event.toolName}] with args: ${event.args}` }));
-            setLogs(prev => [...prev, `> Starting Tool: ${event.toolName}`]);
+            setStatusText(`Executing Tool [${event.toolName}]...`);
             break;
           case 'tool_end':
-            setDioramaState(prev => ({ ...prev, status: 'In_Progress', message: 'Tool finished. Resuming thought...', toolInfo: `Result: ${event.result}` }));
-            setLogs(prev => [...prev, `> Finished Tool: ${event.toolName}`]);
+            setStatusText(`Tool [${event.toolName}] finished.`);
             break;
           case 'completed':
-            setDioramaState({ status: 'Completed', message: event.content });
-            setLogs(prev => [...prev, `> Task Completed.`]);
+            setMessages(event.finalMessages);
+            setIsProcessing(false);
             break;
           case 'error':
-            setDioramaState({ status: 'Failed', message: event.error.message });
-            setLogs(prev => [...prev, `> Error: ${event.error.message}`]);
+            setMessages([...newMessages, { role: 'assistant', content: `❌ Error: ${event.error.message}` }]);
+            setIsProcessing(false);
             break;
         }
       }
-    };
-    consumeStream();
-  }, [stream]);
+    } catch (e: any) {
+      setIsProcessing(false);
+    }
+  };
+
+  // Filter out system and tool messages for the chat log
+  const chatLog = messages.filter(m => m.role === 'user' || m.role === 'assistant');
 
   return (
-    <Box flexDirection="column" padding={1}>
-      <Text bold color="yellow">You: {prompt}</Text>
-      <DioramaStage state={dioramaState} />
+    <Box flexDirection="column">
+      <Box marginBottom={1}>
+        <Text bold color="magenta">✨ PixPal Terminal Initialized. Type 'exit' to quit.</Text>
+      </Box>
+
+      {/* Claude Code Style Scrolling History */}
+      <Static items={chatLog}>
+        {(msg, index) => (
+          <Box key={index} flexDirection="column" paddingY={1}>
+            <Text bold color={msg.role === 'user' ? 'blue' : 'green'}>
+              {msg.role === 'user' ? 'You' : 'PixPal'}
+            </Text>
+            <Text>{msg.content}</Text>
+          </Box>
+        )}
+      </Static>
+
+      {/* Active Processing Area (The Diorama) */}
+      {isProcessing && (
+        <Box flexDirection="column" borderStyle="round" borderColor="cyan" paddingX={2} marginY={1}>
+          <Box alignItems="center">
+            <Box marginRight={2}>
+              <Text bold color="cyan">{workFrames[frameIdx]}</Text>
+            </Box>
+            <Text color="yellow">{statusText}</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>{currentStream}</Text>
+          </Box>
+        </Box>
+      )}
+
+      {/* Input Area */}
+      {!isProcessing && (
+        <Box marginTop={1}>
+          <Box marginRight={1}>
+            <Text color="blue">{idleFrames[frameIdx]}</Text>
+          </Box>
+          <Box flexDirection="column" justifyContent="center">
+            <Box>
+              <Text bold color="yellow"> {'> '} </Text>
+              {/* @ts-ignore */}
+              <TextInput value={input} onChange={setInput} onSubmit={handleSubmit} />
+            </Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };
