@@ -75,7 +75,8 @@ async function main() {
     activeChannel = new CLIChannel(config, tools);
   }
 
-  // The connect method now blocks and handles the entire interactive loop inside React
+  // The connect method now blocks and handles the entire interactive loop inside React (for CLI)
+  // or keeps the WebSocket connection alive (for Feishu)
   await activeChannel.connect();
 }
 

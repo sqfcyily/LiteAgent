@@ -98,6 +98,7 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
         }
       }
     } catch (e: any) {
+      setMessages([...newMessages, { role: 'assistant', content: `❌ Fatal Error: ${e.message}` }]);
       setIsProcessing(false);
     }
   };
