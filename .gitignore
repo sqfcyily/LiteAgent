@@ -1,0 +1,3 @@
+/node_modules
+.agentrc
+package-lock.json
