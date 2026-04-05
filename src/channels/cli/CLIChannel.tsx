@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { render, Box, Text } from 'ink';
+import { render, Box, Text, Static } from 'ink';
 import TextInput from 'ink-text-input';
 import Markdown from 'ink-markdown';
 import { runEngine, EngineConfig } from '../../core/engine.js';
@@ -32,10 +32,14 @@ export class CLIChannel implements Channel {
 // React Root for the CLI Channel
 // ---------------------------------------------------------
 const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ config, tools }) => {
+  // messages array contains the full context needed for the LLM
   const [messages, setMessages] = useState<Message[]>([
     { role: 'system', content: `You are PixPal, a helpful pixel-art assistant. Always use tools when necessary. Language preference: ${config.language || 'en-US'}.` }
   ]);
   
+  // history array ONLY contains fully completed messages for the Static renderer
+  const [history, setHistory] = useState<Message[]>([]);
+
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusText, setStatusText] = useState('Ready');
@@ -67,8 +71,15 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
       process.exit(0);
     }
 
-    const newMessages = [...messages, { role: 'user' as const, content: text }];
+    const userMsg = { role: 'user' as const, content: text };
+    
+    // 1. Immediately push user's text to Static History so it permanently renders
+    setHistory(prev => [...prev, userMsg]);
+
+    // 2. Append to full LLM context
+    const newMessages = [...messages, userMsg];
     setMessages(newMessages);
+    
     setInput('');
     setIsProcessing(true);
     setStatusText('Thinking...');
@@ -89,23 +100,33 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
             setStatusText(`Tool [${event.toolName}] finished.`);
             break;
           case 'completed':
+            // 3. Update full LLM context with final response
             setMessages(event.finalMessages);
+            // 4. Push final response to Static History to permanently render
+            setHistory(prev => [...prev, { role: 'assistant', content: event.content }]);
+            
+            setCurrentStream('');
             setIsProcessing(false);
             break;
           case 'error':
-            setMessages([...newMessages, { role: 'assistant', content: `❌ Error: ${event.error.message}` }]);
+            const errorMsg = { role: 'assistant' as const, content: `❌ Error: ${event.error.message}` };
+            setMessages([...newMessages, errorMsg]);
+            setHistory(prev => [...prev, errorMsg]);
+            
+            setCurrentStream('');
             setIsProcessing(false);
             break;
         }
       }
     } catch (e: any) {
-      setMessages([...newMessages, { role: 'assistant', content: `❌ Fatal Error: ${e.message}` }]);
+      const fatalErrorMsg = { role: 'assistant' as const, content: `❌ Fatal Error: ${e.message}` };
+      setMessages([...newMessages, fatalErrorMsg]);
+      setHistory(prev => [...prev, fatalErrorMsg]);
+      
+      setCurrentStream('');
       setIsProcessing(false);
     }
   };
-
-  // Filter out system and tool messages for the chat log
-  const chatLog = messages.filter(m => m.role === 'user' || m.role === 'assistant');
 
   return (
     <Box flexDirection="column">
@@ -113,9 +134,9 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
         <Text bold color="magenta">✨ PixPal Terminal Initialized. Type 'exit' to quit.</Text>
       </Box>
 
-      {/* Claude Code Style History (Replacing Static to prevent infinite scrolling bugs during animation ticks) */}
-      <Box flexDirection="column" marginBottom={1}>
-        {chatLog.map((msg, index) => (
+      {/* Claude Code Style History (Using Static to flush completed items and prevent dynamic jump) */}
+      <Static items={history}>
+        {(msg, index) => (
           <Box key={index} flexDirection="column" paddingY={0} marginTop={1}>
             <Text bold color={msg.role === 'user' ? 'blue' : 'green'}>
               {msg.role === 'user' ? 'You:' : 'PixPal:'}
@@ -128,10 +149,10 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
               </Box>
             )}
           </Box>
-        ))}
-      </Box>
+        )}
+      </Static>
 
-      {/* Active Processing Area (The Diorama) */}
+      {/* Active Processing Area (The Diorama & Live Stream) */}
       {isProcessing && (
         <Box flexDirection="column" borderStyle="round" borderColor="cyan" paddingX={2} marginY={1}>
           <Box alignItems="center">
@@ -141,7 +162,8 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
             <Text color="yellow">{statusText}</Text>
           </Box>
           <Box marginTop={1}>
-            <Text dimColor>{currentStream}</Text>
+            {/* Streamed partial markdown might look funky briefly, but Text provides stable fallback */}
+            <Markdown>{currentStream}</Markdown>
           </Box>
         </Box>
       )}
