@@ -115,7 +115,11 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
             break;
           case 'completed':
             setMessages(event.finalMessages);
-            setHistory(prev => [...prev, { role: 'assistant', content: event.content }]);
+            if (event.content && event.content.trim()) {
+              setHistory(prev => [...prev, { role: 'assistant', content: event.content }]);
+            } else {
+              setHistory(prev => [...prev, { role: 'assistant', content: '✅ Task completed successfully.' }]);
+            }
             setCurrentStream('');
             
             setAppState('success');
@@ -176,7 +180,7 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
               <Text color={appState === 'working' ? 'yellow' : 'cyan'}>{statusText}</Text>
             </Box>
             <Box marginTop={1}>
-              <Markdown>{currentStream}</Markdown>
+              {currentStream.trim() ? <Markdown>{currentStream}</Markdown> : null}
             </Box>
           </Box>
         )}

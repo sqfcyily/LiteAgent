@@ -36,13 +36,23 @@ export async function* runEngine(
 
       if (delta.content) {
         currentText += delta.content;
-        yield { type: 'thinking', content: currentText };
+        if (currentText.trim()) {
+          yield { type: 'thinking', content: currentText };
+        }
       }
 
       if (delta.tool_calls) {
         for (const tc of delta.tool_calls) {
           if (!currentToolCalls[tc.index]) {
-            currentToolCalls[tc.index] = { id: tc.id, type: 'function', function: { name: tc.function.name, arguments: '' } };
+            currentToolCalls[tc.index] = { 
+              id: tc.id || `call_${Date.now()}_${tc.index}`, 
+              type: 'function', 
+              function: { name: tc.function?.name || '', arguments: '' } 
+            };
+          } else {
+            if (tc.function?.name) {
+              currentToolCalls[tc.index].function.name += tc.function.name;
+            }
           }
           if (tc.function?.arguments) {
             currentToolCalls[tc.index].function.arguments += tc.function.arguments;
@@ -53,18 +63,26 @@ export async function* runEngine(
 
     // 2. Append Assistant Response to Context
     const toolCallsArr = Object.values(currentToolCalls);
-    messages.push({
-      role: 'assistant',
-      content: currentText,
-      tool_calls: toolCallsArr.length > 0 ? toolCallsArr : undefined
-    });
+    if (currentText.trim() || toolCallsArr.length === 0) {
+      messages.push({
+        role: 'assistant',
+        content: currentText,
+        tool_calls: toolCallsArr.length > 0 ? toolCallsArr : undefined
+      });
+    } else {
+      messages.push({
+        role: 'assistant',
+        tool_calls: toolCallsArr
+      });
+    }
 
     // 3. Execute Tools if any
     if (toolCallsArr.length > 0) {
       for (const tc of toolCallsArr) {
         yield { type: 'tool_start', toolName: tc.function.name, args: tc.function.arguments };
         try {
-          const result = await runTool(tc.function.name, JSON.parse(tc.function.arguments));
+          const argsObj = JSON.parse(tc.function.arguments || '{}');
+          const result = await runTool(tc.function.name, argsObj);
           yield { type: 'tool_end', toolName: tc.function.name, result };
           messages.push({
             role: 'tool',
@@ -73,10 +91,11 @@ export async function* runEngine(
             name: tc.function.name
           });
         } catch (e: any) {
-          yield { type: 'error', error: e };
+          const errorMsg = `Error executing tool: ${e.message}`;
+          yield { type: 'tool_end', toolName: tc.function.name, result: errorMsg };
           messages.push({
             role: 'tool',
-            content: `Error executing tool: ${e.message}`,
+            content: errorMsg,
             tool_call_id: tc.id,
             name: tc.function.name
           });
@@ -85,11 +104,9 @@ export async function* runEngine(
     } else {
       // 4. Break if no tools were called (Task Complete)
       yield { type: 'completed', content: currentText, finalMessages: messages };
-      break;
+      return;
     }
   }
 
-  if (loops >= maxLoops) {
-    yield { type: 'error', error: new Error('Max loops reached.') };
-  }
+  yield { type: 'error', error: new Error('Max loops reached.') };
 }
