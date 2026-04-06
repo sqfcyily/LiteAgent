@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { render, Box, Text, Static } from 'ink';
 import TextInput from 'ink-text-input';
-import Markdown from 'ink-markdown';
+import { Markdown } from '../../ui/components/Markdown.js';
 import { runEngine, EngineConfig } from '../../core/engine.js';
 import type { Channel } from '../base.js';
 import type { EngineEvent, Message, ToolSchema } from '../../core/types.js';
