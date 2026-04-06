@@ -21,7 +21,10 @@ async function main() {
   }
 
   const args = process.argv.slice(2);
-  const command = args[0] || 'chat';
+  const isDev = args.includes('--dev');
+  config.isDev = isDev;
+
+  const command = args[0] && !args[0].startsWith('--') ? args[0] : 'chat';
 
   switch (command) {
     case 'chat':

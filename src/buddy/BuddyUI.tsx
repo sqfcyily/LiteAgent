@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { render, Box, Text, Static } from 'ink';
+import { render, Box, Text, Static, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { Markdown } from '../components/Markdown.js';
 import { runEngine, EngineConfig } from '../services/agentEngine.js';
@@ -44,7 +44,17 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
   const [statusText, setStatusText] = useState('Ready');
   const [currentStream, setCurrentStream] = useState('');
   const [frameIdx, setFrameIdx] = useState(0);
-  
+
+  // Dev Mode & Inspector
+  const [showInspector, setShowInspector] = useState(config.isDev || false);
+  const [debugLogs, setDebugLogs] = useState<any[]>([]);
+
+  useInput((input, key) => {
+    if (key.ctrl && input === 'i') {
+      setShowInspector(prev => !prev);
+    }
+  });
+
   const isProcessing = appState === 'thinking' || appState === 'working';
 
   // 🐾 Cute Line-Art Cat Animation Dictionary
@@ -95,11 +105,18 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
     setAppState('thinking');
     setStatusText('Thinking...');
     setCurrentStream('');
+    setDebugLogs([]); // Clear logs for new turn
 
     try {
       const stream = runEngine(newMessages, tools, config);
       for await (const event of stream) {
         switch (event.type) {
+          case 'debug':
+            setDebugLogs(prev => {
+              const newLogs = [...prev, { event: event.event, data: event.data }];
+              return newLogs.slice(-10); // Keep last 10
+            });
+            break;
           case 'thinking':
             setAppState('thinking');
             setStatusText('Thinking...');
@@ -200,6 +217,27 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
                 <TextInput value={input} onChange={setInput} onSubmit={handleSubmit} />
               </Box>
             </Box>
+          </Box>
+        )}
+
+        {/* Dev Inspector Panel */}
+        {config.isDev && (
+          <Box marginTop={1} flexDirection="column">
+            <Text color="gray">
+              {showInspector ? '▼' : '▶'} [Dev Mode] Inspector (Press Ctrl+I to toggle)
+            </Text>
+            {showInspector && debugLogs.length > 0 && (
+              <Box borderStyle="round" borderColor="gray" flexDirection="column" paddingX={1} marginTop={1}>
+                {debugLogs.map((log, i) => (
+                  <Box key={i} flexDirection="column" marginBottom={1}>
+                    <Text color="cyan" bold>
+                      {log.event === 'request' ? '📤 API Request' : '📥 API Response'} (Loop {log.data.loop})
+                    </Text>
+                    <Text color="gray">{JSON.stringify(log.data, null, 2)}</Text>
+                  </Box>
+                ))}
+              </Box>
+            )}
           </Box>
         )}
       </Box>

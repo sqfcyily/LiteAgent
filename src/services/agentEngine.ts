@@ -4,6 +4,7 @@ import { runTool } from '../tools/index.js';
 
 export interface EngineConfig extends LLMConfig {
   maxLoops?: number;
+  isDev?: boolean;
 }
 
 /**
@@ -27,6 +28,22 @@ export async function* runEngine(
 
     let currentText = '';
     const currentToolCalls: Record<number, any> = {};
+
+    if (config.isDev) {
+      yield {
+        type: 'debug',
+        event: 'request',
+        data: {
+          loop: loops,
+          messages: messages.map(m => ({ 
+            role: m.role, 
+            content: m.content ? (m.content.length > 200 ? m.content.substring(0, 200) + '...' : m.content) : m.content,
+            tool_calls: m.tool_calls
+          })),
+          tools: tools.map(t => t.function.name)
+        }
+      };
+    }
 
     // 1. Fetch LLM stream
     const stream = fetchStream(messages, tools, config);
@@ -77,6 +94,19 @@ export async function* runEngine(
     }
 
     // 3. Execute Tools if any
+    if (config.isDev) {
+      yield {
+        type: 'debug',
+        event: 'response',
+        data: {
+          loop: loops,
+          content: currentText,
+          requiresTool: toolCallsArr.length > 0,
+          toolCalls: toolCallsArr.map(tc => ({ name: tc.function.name, args: tc.function.arguments }))
+        }
+      };
+    }
+
     if (toolCallsArr.length > 0) {
       for (const tc of toolCallsArr) {
         yield { type: 'tool_start', toolName: tc.function.name, args: tc.function.arguments };

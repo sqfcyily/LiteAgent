@@ -32,7 +32,8 @@ export type EngineEvent =
   | { type: 'tool_start'; toolName: string; args: string }
   | { type: 'tool_end'; toolName: string; result: string }
   | { type: 'completed'; content: string; finalMessages: Message[] }
-  | { type: 'error'; error: Error };
+  | { type: 'error'; error: Error }
+  | { type: 'debug'; event: 'request' | 'response'; data: any };
 
 // Context payload for tools
 export interface TaskContext {
