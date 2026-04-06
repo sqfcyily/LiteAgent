@@ -1,4 +1,4 @@
-import { getConfiguration } from '../config/index.js';
+import { getConfiguration } from './config/index.js';
 import { runChatCommand } from './commands/chat.js';
 import * as readline from 'readline';
 
