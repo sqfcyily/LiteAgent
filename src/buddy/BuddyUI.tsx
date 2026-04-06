@@ -47,27 +47,27 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
   
   const isProcessing = appState === 'thinking' || appState === 'working';
 
-  // 🤖 Expressive Pixel-Block Robot Animation Dictionary
+  // ✨ Cute Cyber Spark (Data Sprite) Animation Dictionary
   const robotFrames: Record<RobotState, string[]> = {
     idle: [
-      " ▄▄████▄▄ \n ██ ▀  ▀ ██ \n ▀▀████▀▀ ",
-      " ▄▄████▄▄ \n ██ ▄  ▄ ██ \n ▀▀████▀▀ "
+      "   / \\   \n { o_o } \n   \\ /   ",
+      "   / \\   \n { -_- } \n   \\ /   "
     ],
     thinking: [
-      " ▄▄████▄▄ 💡\n ██ ▀  ▄ ██ \n ▀▀████▀▀ ",
-      " ▄▄████▄▄  \n ██ ▄  ▀ ██ 💡\n ▀▀████▀▀ "
+      "   / \\ 💡\n { •_o } \n   \\ /   ",
+      "   / \\   \n { o_• }💡\n   \\ /   "
     ],
     working: [
-      " ▄▄████▄▄ ⚡\n ██ ＞  ＜ ██ \n ▀▀████▀▀ ",
-      " ▄▄████▄▄  \n ██ ＞  ＜ ██ ⚡\n ▀▀████▀▀ "
+      "   / \\ ⚡\n { >_< } \n   \\ /   ",
+      "   / \\   \n { >_< }⚡\n   \\ /   "
     ],
     success: [
-      " ▄▄████▄▄ ✨\n ██ ＾  ＾ ██ \n ▀▀████▀▀ ",
-      " ▄▄████▄▄  \n ██ ＾  ＾ ██ ✨\n ▀▀████▀▀ "
+      "   / \\ ✨\n { ^_^ } \n   \\ /   ",
+      "   / \\   \n { ^o^ }✨\n   \\ /   "
     ],
     error: [
-      " ▄▄████▄▄ 💧\n ██ ×  × ██ \n ▀▀████▀▀ ",
-      " ▄▄████▄▄  \n ██ ×  × ██ 💧\n ▀▀████▀▀ "
+      "   / \\ 💧\n { x_x } \n   \\ /   ",
+      "   / \\   \n { X_X }💧\n   \\ /   "
     ]
   };
 
@@ -185,7 +185,7 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
         {(appState === 'idle' || appState === 'success' || appState === 'error') && (
           <Box marginTop={1}>
             <Box marginRight={1}>
-              <Text color={appState === 'success' ? 'green' : appState === 'error' ? 'red' : 'yellow'}>
+              <Text color={appState === 'success' ? 'green' : appState === 'error' ? 'red' : 'cyan'}>
                 {robotFrames[appState][frameIdx]}
               </Text>
             </Box>
