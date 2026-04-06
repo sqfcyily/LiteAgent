@@ -147,11 +147,7 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
   };
 
   return (
-    <Box flexDirection="column">
-      <Box marginBottom={1}>
-        <Text bold color="magenta">✨ PixPal Terminal Initialized. Type 'exit' to quit.</Text>
-      </Box>
-
+    <>
       {/* Claude Code Style History (Using Static to flush completed items and prevent dynamic jump) */}
       <Static items={history}>
         {(msg, index) => (
@@ -170,40 +166,42 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[] }> = ({ co
         )}
       </Static>
 
-      {/* Active Processing Area (The Diorama & Live Stream) */}
-      {isProcessing && (
-        <Box flexDirection="column" borderStyle="round" borderColor={appState === 'working' ? 'yellow' : 'cyan'} paddingX={2} marginY={1}>
-          <Box alignItems="center">
-            <Box marginRight={2}>
-              <Text bold color={appState === 'working' ? 'yellow' : 'cyan'}>
+      <Box flexDirection="column">
+        {/* Active Processing Area (The Diorama & Live Stream) */}
+        {isProcessing && (
+          <Box flexDirection="column" borderStyle="round" borderColor={appState === 'working' ? 'yellow' : 'cyan'} paddingX={2} marginY={1}>
+            <Box alignItems="center">
+              <Box marginRight={2}>
+                <Text bold color={appState === 'working' ? 'yellow' : 'cyan'}>
+                  {robotFrames[appState][frameIdx]}
+                </Text>
+              </Box>
+              <Text color={appState === 'working' ? 'yellow' : 'cyan'}>{statusText}</Text>
+            </Box>
+            <Box marginTop={1}>
+              <Markdown>{currentStream}</Markdown>
+            </Box>
+          </Box>
+        )}
+
+        {/* Input Area (Idle / Success / Error) */}
+        {!isProcessing && (
+          <Box marginTop={1}>
+            <Box marginRight={1}>
+              <Text color={appState === 'success' ? 'green' : appState === 'error' ? 'red' : 'blue'}>
                 {robotFrames[appState][frameIdx]}
               </Text>
             </Box>
-            <Text color={appState === 'working' ? 'yellow' : 'cyan'}>{statusText}</Text>
-          </Box>
-          <Box marginTop={1}>
-            <Markdown>{currentStream}</Markdown>
-          </Box>
-        </Box>
-      )}
-
-      {/* Input Area (Idle / Success / Error) */}
-      {!isProcessing && (
-        <Box marginTop={1}>
-          <Box marginRight={1}>
-            <Text color={appState === 'success' ? 'green' : appState === 'error' ? 'red' : 'blue'}>
-              {robotFrames[appState][frameIdx]}
-            </Text>
-          </Box>
-          <Box flexDirection="column" justifyContent="center">
-            <Box>
-              <Text bold color="yellow"> {'> '} </Text>
-              {/* @ts-ignore */}
-              <TextInput value={input} onChange={setInput} onSubmit={handleSubmit} />
+            <Box flexDirection="column" justifyContent="center">
+              <Box>
+                <Text bold color="yellow"> {'> '} </Text>
+                {/* @ts-ignore */}
+                <TextInput value={input} onChange={setInput} onSubmit={handleSubmit} />
+              </Box>
             </Box>
           </Box>
-        </Box>
-      )}
-    </Box>
+        )}
+      </Box>
+    </>
   );
 };
