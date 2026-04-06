@@ -30,7 +30,9 @@ export class BuddyUI {
 type RobotState = 'idle' | 'thinking' | 'working' | 'success' | 'error';
 
 const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
-  const initialSystemPrompt = `You are PixPal, a powerful, general-purpose AI assistant. Your name reflects your lightweight and precise nature, like a pixel, but you are equipped to handle ANY task the user requests—from software development to analysis and beyond. Always use tools when necessary to assist the user effectively. Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
+  const initialSystemPrompt = `You are PixPal, a powerful, general-purpose AI assistant. Your name reflects your lightweight and precise nature, like a pixel, but you are equipped to handle ANY task the user requests—from software development to analysis and beyond. Always use tools when necessary to assist the user effectively. 
+Current Working Directory: ${process.cwd()}
+Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
   
   const [messages, setMessages] = useState<Message[]>([
     { role: 'system', content: initialSystemPrompt }

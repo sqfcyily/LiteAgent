@@ -1,5 +1,6 @@
 import type { ToolSchema } from '../utils/types.js';
 import { ReadFileTool, WriteFileTool, EditFileTool, RenameFileTool, DeleteFileTool } from './system/fsTools.js';
+import { BashTool } from './system/bashTool.js';
 import { BaseTool } from './base.js';
 
 // Central Registry of all system tools
@@ -9,6 +10,7 @@ const registry: BaseTool[] = [
   new EditFileTool(),
   new RenameFileTool(),
   new DeleteFileTool(),
+  new BashTool(),
   // Keep the echo tool as a simple test fallback if desired
   {
     name: 'echo',

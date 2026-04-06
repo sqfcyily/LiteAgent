@@ -2,6 +2,8 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { BaseTool } from '../base.js';
 
+const resolvePath = (p: string) => path.resolve(process.cwd(), p);
+
 export class ReadFileTool extends BaseTool {
   readonly name = 'read_file';
   readonly description = 'Reads the contents of a file from the local file system. Use this to inspect file contents.';
@@ -15,7 +17,8 @@ export class ReadFileTool extends BaseTool {
 
   async call(input: { file_path: string }): Promise<string> {
     try {
-      const content = await fs.readFile(input.file_path, 'utf-8');
+      const targetPath = resolvePath(input.file_path);
+      const content = await fs.readFile(targetPath, 'utf-8');
       return content;
     } catch (err: any) {
       return `Failed to read file: ${err.message}`;
@@ -37,9 +40,10 @@ export class WriteFileTool extends BaseTool {
 
   async call(input: { file_path: string, content: string }): Promise<string> {
     try {
-      await fs.mkdir(path.dirname(input.file_path), { recursive: true });
-      await fs.writeFile(input.file_path, input.content, 'utf-8');
-      return `Successfully wrote to file: ${input.file_path}`;
+      const targetPath = resolvePath(input.file_path);
+      await fs.mkdir(path.dirname(targetPath), { recursive: true });
+      await fs.writeFile(targetPath, input.content, 'utf-8');
+      return `Successfully wrote to file: ${targetPath}`;
     } catch (err: any) {
       return `Failed to write file: ${err.message}`;
     }
@@ -61,13 +65,14 @@ export class EditFileTool extends BaseTool {
 
   async call(input: { file_path: string, old_string: string, new_string: string }): Promise<string> {
     try {
-      const content = await fs.readFile(input.file_path, 'utf-8');
+      const targetPath = resolvePath(input.file_path);
+      const content = await fs.readFile(targetPath, 'utf-8');
       if (!content.includes(input.old_string)) {
         return `Error: The string provided in old_string was not found in the file. No changes made.`;
       }
       const newContent = content.replace(input.old_string, input.new_string);
-      await fs.writeFile(input.file_path, newContent, 'utf-8');
-      return `Successfully edited file: ${input.file_path}`;
+      await fs.writeFile(targetPath, newContent, 'utf-8');
+      return `Successfully edited file: ${targetPath}`;
     } catch (err: any) {
       return `Failed to edit file: ${err.message}`;
     }
@@ -88,9 +93,11 @@ export class RenameFileTool extends BaseTool {
 
   async call(input: { old_path: string, new_path: string }): Promise<string> {
     try {
-      await fs.mkdir(path.dirname(input.new_path), { recursive: true });
-      await fs.rename(input.old_path, input.new_path);
-      return `Successfully renamed ${input.old_path} to ${input.new_path}`;
+      const oldTargetPath = resolvePath(input.old_path);
+      const newTargetPath = resolvePath(input.new_path);
+      await fs.mkdir(path.dirname(newTargetPath), { recursive: true });
+      await fs.rename(oldTargetPath, newTargetPath);
+      return `Successfully renamed ${oldTargetPath} to ${newTargetPath}`;
     } catch (err: any) {
       return `Failed to rename file: ${err.message}`;
     }
@@ -110,8 +117,9 @@ export class DeleteFileTool extends BaseTool {
 
   async call(input: { file_path: string }): Promise<string> {
     try {
-      await fs.unlink(input.file_path);
-      return `Successfully deleted file: ${input.file_path}`;
+      const targetPath = resolvePath(input.file_path);
+      await fs.unlink(targetPath);
+      return `Successfully deleted file: ${targetPath}`;
     } catch (err: any) {
       return `Failed to delete file: ${err.message}`;
     }
