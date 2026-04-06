@@ -30,7 +30,7 @@ export class BuddyUI {
 type RobotState = 'idle' | 'thinking' | 'working' | 'success' | 'error';
 
 const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
-  const initialSystemPrompt = `You are PixPal, a helpful pixel-art assistant. Always use tools when necessary. Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
+  const initialSystemPrompt = `You are PixPal, a powerful, general-purpose AI assistant. Your name reflects your lightweight and precise nature, like a pixel, but you are equipped to handle ANY task the user requests—from software development to analysis and beyond. Always use tools when necessary to assist the user effectively. Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
   
   const [messages, setMessages] = useState<Message[]>([
     { role: 'system', content: initialSystemPrompt }
@@ -47,27 +47,27 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
   
   const isProcessing = appState === 'thinking' || appState === 'working';
 
-  // ⚡ Pikachu Emotion & Animation Dictionary
+  // 🤖 Expressive Robot Animation Dictionary
   const robotFrames: Record<RobotState, string[]> = {
     idle: [
-      "  /\\___/\\  \n (  o.o  ) \n  > @w@ <  ",
-      "  /\\___/\\  \n (  -.-  ) \n  > @w@ <  "
+      "  ◂|▸  \n [o_o] \n /|_|\\ ",
+      "  ◃|▹  \n [-_-] \n /|_|\\ "
     ],
     thinking: [
-      "  /\\___/\\ ?\n (  o.-  ) \n  > @w@ <  ",
-      "  /\\___/\\  \n (  o.-  )?\n  > @w@ <  "
+      "  ◂|▸ 💡\n [o_o] \n /|_|\\ ",
+      "  ◃|▹  \n [O_O] 💡\n /|_|\\ "
     ],
     working: [
-      "  /\\___/\\ ⚡\n (  >.<  ) \n  > @w@ <  ",
-      "  /\\___/\\  \n (  >_<  ) ⚡\n  > @w@ <  "
+      "  ◂|▸ ⚡\n [>_<] \n /|_|\\ ",
+      "  ◃|▹  \n [>_<] ⚡\n /|_|\\ "
     ],
     success: [
-      "  /\\___/\\ ✨\n (  ^.^  ) \n  > @w@ <  ",
-      "  /\\___/\\  \n (  ^O^  ) ✨\n  \\ @w@ /  "
+      "  ◂|▸ ✨\n [^_^] \n \\|_|/ ",
+      "  ◃|▹  \n [^‿^] ✨\n \\|_|/ "
     ],
     error: [
-      "  /\\___/\\ 💧\n (  x.x  ) \n  > @~@ <  ",
-      "  /\\___/\\  \n (  X.X  ) 💧\n  > @~@ <  "
+      "  ◂|▸ 💧\n [x_x] \n /|_|\\ ",
+      "  ◃|▹  \n [X_X] 💧\n /|_|\\ "
     ]
   };
 
