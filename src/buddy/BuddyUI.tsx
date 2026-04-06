@@ -47,27 +47,27 @@ const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInst
   
   const isProcessing = appState === 'thinking' || appState === 'working';
 
-  // 🤖 Expressive Robot Animation Dictionary
+  // 🤖 Expressive Pixel-Block Robot Animation Dictionary
   const robotFrames: Record<RobotState, string[]> = {
     idle: [
-      "  ◂|▸  \n [o_o] \n /|_|\\ ",
-      "  ◃|▹  \n [-_-] \n /|_|\\ "
+      " ▄▄████▄▄ \n ██ ▀  ▀ ██ \n ▀▀████▀▀ ",
+      " ▄▄████▄▄ \n ██ ▄  ▄ ██ \n ▀▀████▀▀ "
     ],
     thinking: [
-      "  ◂|▸ 💡\n [o_o] \n /|_|\\ ",
-      "  ◃|▹  \n [O_O] 💡\n /|_|\\ "
+      " ▄▄████▄▄ 💡\n ██ ▀  ▄ ██ \n ▀▀████▀▀ ",
+      " ▄▄████▄▄  \n ██ ▄  ▀ ██ 💡\n ▀▀████▀▀ "
     ],
     working: [
-      "  ◂|▸ ⚡\n [>_<] \n /|_|\\ ",
-      "  ◃|▹  \n [>_<] ⚡\n /|_|\\ "
+      " ▄▄████▄▄ ⚡\n ██ ＞  ＜ ██ \n ▀▀████▀▀ ",
+      " ▄▄████▄▄  \n ██ ＞  ＜ ██ ⚡\n ▀▀████▀▀ "
     ],
     success: [
-      "  ◂|▸ ✨\n [^_^] \n \\|_|/ ",
-      "  ◃|▹  \n [^‿^] ✨\n \\|_|/ "
+      " ▄▄████▄▄ ✨\n ██ ＾  ＾ ██ \n ▀▀████▀▀ ",
+      " ▄▄████▄▄  \n ██ ＾  ＾ ██ ✨\n ▀▀████▀▀ "
     ],
     error: [
-      "  ◂|▸ 💧\n [x_x] \n /|_|\\ ",
-      "  ◃|▹  \n [X_X] 💧\n /|_|\\ "
+      " ▄▄████▄▄ 💧\n ██ ×  × ██ \n ▀▀████▀▀ ",
+      " ▄▄████▄▄  \n ██ ×  × ██ 💧\n ▀▀████▀▀ "
     ]
   };
 
