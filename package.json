@@ -1,13 +1,13 @@
 {
-  "name": "pixpal",
+  "name": "liteagent",
   "version": "0.1.0",
-  "description": "An ultra-lightweight, pixel-art visualized personal AI assistant",
+  "description": "A lightweight, general-purpose AI agent harness",
   "main": "src/main.tsx",
   "type": "module",
   "scripts": {
     "start": "bun run src/main.tsx",
     "dev": "bun run --watch src/main.tsx --dev",
-    "build": "bun build src/main.tsx --compile --outfile pixpal"
+    "build": "bun build src/main.tsx --compile --outfile liteagent"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

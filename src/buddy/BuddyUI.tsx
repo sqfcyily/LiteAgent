@@ -18,8 +18,8 @@ export class BuddyUI {
 
   async connect(): Promise<void> {
     console.clear();
-    console.log('\x1b[35m✨ PixPal Terminal Initialized. Type \'exit\' to quit.\x1b[0m\n');
-    const { waitUntilExit } = render(<PixPalApp config={this.config} tools={this.tools} skillInstructions={this.skillInstructions} />);
+    console.log('\x1b[36m🚀 LiteAgent Terminal Initialized. Type \'exit\' to quit.\x1b[0m\n');
+    const { waitUntilExit } = render(<LiteAgentApp config={this.config} tools={this.tools} skillInstructions={this.skillInstructions} />);
     await waitUntilExit();
   }
 }
@@ -27,10 +27,10 @@ export class BuddyUI {
 // ---------------------------------------------------------
 // React Root for the Buddy Channel
 // ---------------------------------------------------------
-type RobotState = 'idle' | 'thinking' | 'working' | 'success' | 'error';
+type AgentState = 'idle' | 'thinking' | 'working' | 'success' | 'error';
 
-const PixPalApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
-  const initialSystemPrompt = `You are PixPal, a powerful, general-purpose AI assistant. Your name reflects your lightweight and precise nature, like a pixel, but you are equipped to handle ANY task the user requests—from software development to analysis and beyond. Always use tools when necessary to assist the user effectively. 
+const LiteAgentApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
+  const initialSystemPrompt = `You are LiteAgent, a powerful, general-purpose AI assistant. You are a lightweight and precise tool equipped to handle ANY task the user requests—from software development to analysis and beyond. Always use tools when necessary to assist the user effectively. 
 Current Working Directory: ${process.cwd()}
 Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
   
@@ -42,7 +42,7 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
   const [input, setInput] = useState('');
   
   // Advanced State Tracking
-  const [appState, setAppState] = useState<RobotState>('idle');
+  const [appState, setAppState] = useState<AgentState>('idle');
   const [statusText, setStatusText] = useState('Ready');
   const [currentStream, setCurrentStream] = useState('');
   const [frameIdx, setFrameIdx] = useState(0);
@@ -67,28 +67,17 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
 
   const isProcessing = appState === 'thinking' || appState === 'working';
 
-  // 🐾 Cute Line-Art Cat Animation Dictionary
-  const robotFrames: Record<RobotState, string[]> = {
-    idle: [
-      "  /\\_/\\  \n ( o.o ) \n  > ^ <  ",
-      "  /\\_/\\  \n ( -.- ) \n  > ^ <  "
-    ],
-    thinking: [
-      "  /\\_/\\ 💡\n ( o.- ) \n  > ^ <  ",
-      "  /\\_/\\  \n ( o.- )💡\n  > ^ <  "
-    ],
-    working: [
-      "  /\\_/\\ ⚡\n ( >.< ) \n  > ^ <  ",
-      "  /\\_/\\  \n ( >_< )⚡\n  > ^ <  "
-    ],
-    success: [
-      "  /\\_/\\ ✨\n ( ^.^ ) \n  > ^ <  ",
-      "  /\\_/\\  \n ( ^O^ )✨\n  \\ ^ /  "
-    ],
-    error: [
-      "  /\\_/\\ 💧\n ( x.x ) \n  > ~ <  ",
-      "  /\\_/\\  \n ( X.X )💧\n  > ~ <  "
-    ]
+  // Minimal Spinner Dictionary
+  const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  const idleIcon = '●';
+  const successIcon = '✓';
+  const errorIcon = '✖';
+  
+  const getStatusIcon = () => {
+    if (appState === 'idle') return idleIcon;
+    if (appState === 'success') return successIcon;
+    if (appState === 'error') return errorIcon;
+    return spinnerFrames[frameIdx % spinnerFrames.length];
   };
 
   useEffect(() => {
@@ -98,9 +87,9 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
       return;
     }
 
-    const speed = isProcessing ? 200 : 800;
+    const speed = isProcessing ? 80 : 800; // Faster for spinner
     const timer = setInterval(() => {
-      setFrameIdx(prev => (prev + 1) % 2);
+      setFrameIdx(prev => prev + 1);
     }, speed);
     return () => clearInterval(timer);
   }, [isProcessing, config.isDev]);
@@ -187,7 +176,7 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
         {(msg, index) => (
           <Box key={index} flexDirection="column" paddingY={0} marginTop={1}>
             <Text bold color={msg.role === 'user' ? 'blue' : 'green'}>
-              {msg.role === 'user' ? 'You:' : 'PixPal:'}
+              {msg.role === 'user' ? 'You:' : 'LiteAgent:'}
             </Text>
             {msg.role === 'user' ? (
               <Text>{msg.content}</Text>
@@ -205,9 +194,9 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
         {(appState === 'thinking' || appState === 'working') && (
           <Box flexDirection="column" borderStyle="round" borderColor={appState === 'working' ? 'yellow' : 'cyan'} paddingX={2} marginY={1}>
             <Box alignItems="center">
-              <Box marginRight={2}>
+              <Box marginRight={1}>
                 <Text bold color={appState === 'working' ? 'yellow' : 'cyan'}>
-                  {robotFrames[appState][frameIdx]}
+                  {getStatusIcon()}
                 </Text>
               </Box>
               <Text color={appState === 'working' ? 'yellow' : 'cyan'}>{statusText}</Text>
@@ -223,7 +212,7 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
           <Box marginTop={1}>
             <Box marginRight={1}>
               <Text color={appState === 'success' ? 'green' : appState === 'error' ? 'red' : 'cyan'}>
-                {robotFrames[appState][frameIdx]}
+                {getStatusIcon()}
               </Text>
             </Box>
             <Box flexDirection="column" justifyContent="center">

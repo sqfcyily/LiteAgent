@@ -11,7 +11,7 @@ async function main() {
   let config = getConfiguration();
 
   if (!config.apiKey) {
-    console.log('✨ Welcome to PixPal! Let\'s set up your agent.\n');
+    console.log('🚀 Welcome to LiteAgent! Let\'s set up your agent.\n');
     const baseUrl = await askQuestion('🔗 Enter BASE_URL (e.g. https://api.openai.com/v1): ');
     const modelName = await askQuestion('🤖 Enter MODEL_NAME (e.g. gpt-4o): ');
     const apiKey = await askQuestion('🔑 Enter API_KEY: ');
