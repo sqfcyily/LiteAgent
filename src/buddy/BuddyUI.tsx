@@ -265,13 +265,13 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                 {msg.role === 'assistant' && (
                   <>
                     {showHeader && <Box marginBottom={0}><Text bold color="cyan">■ LiteAgent: </Text></Box>}
-                    <Box paddingLeft={2} marginBottom={0}><Markdown>{msg.content}</Markdown></Box>
+                    <Box paddingLeft={4} marginBottom={0}><Markdown>{msg.content}</Markdown></Box>
                   </>
                 )}
 
                 {msg.role === 'tool' && (
                   <>
-                    <Box paddingLeft={2} flexDirection="row">
+                    <Box paddingLeft={4} flexDirection="row">
                       <Text color="yellow">⚙️  Calling Tool: </Text>
                       <Text color="yellow" bold>{msg.toolName}</Text>
                     </Box>
@@ -293,7 +293,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
               </Text>
             </Box>
             {currentStream.trim() ? (
-              <Box marginTop={1}>
+              <Box marginTop={0} paddingLeft={2}>
                 <Markdown>{currentStream}</Markdown>
               </Box>
             ) : null}
@@ -304,7 +304,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
         {appState === 'idle' && finishedResponse && (
           <Box flexDirection="column" marginTop={1} marginBottom={0}>
             <Box marginBottom={0}><Text bold color="cyan">■ LiteAgent: </Text></Box>
-            <Box paddingLeft={2}><Markdown>{finishedResponse}</Markdown></Box>
+            <Box paddingLeft={4}><Markdown>{finishedResponse}</Markdown></Box>
           </Box>
         )}
 
