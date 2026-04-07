@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { getConfiguration, saveConfiguration } from './config/index.js';
 import { runChatCommand } from './commands/chat.js';
 import * as readline from 'readline';

@@ -4,6 +4,9 @@
   "description": "A lightweight, general-purpose AI agent harness",
   "main": "src/main.tsx",
   "type": "module",
+  "bin": {
+    "liteagent": "src/main.tsx"
+  },
   "scripts": {
     "start": "bun run src/main.tsx",
     "dev": "bun run --watch src/main.tsx --dev",
