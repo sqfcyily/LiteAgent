@@ -249,7 +249,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
               <Box key={index} flexDirection="column" marginTop={mt} marginBottom={0}>
                 {msg.role === 'user' && (
                   <>
-                    <Box marginBottom={1}><Text bold color="green">◆ You</Text></Box>
+                    <Box marginBottom={0}><Text bold color="green">◆ You</Text></Box>
                     <Box paddingLeft={2}><Markdown>{msg.content}</Markdown></Box>
                   </>
                 )}
