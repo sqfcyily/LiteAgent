@@ -194,14 +194,8 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
 
   return (
     <>
-      {/* 📜 Top Header */}
-      <Box paddingX={1} borderBottom={true} borderStyle="single" borderColor="cyan" justifyContent="space-between">
-        <Text bold color="cyan">🚀 LiteAgent Workspace</Text>
-        <Text color="gray">Type /dev for logs</Text>
-      </Box>
-
       {/* 📜 Scrollable History via Static */}
-        <Static items={history}>
+      <Static items={history}>
           {(msg, index) => {
             let mt = 0;
             let showHeader = true;
@@ -296,7 +290,7 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
                   value={input} 
                   onChange={setInput} 
                   onSubmit={handleSubmit} 
-                  placeholder="Type a message... (Logs are in dev.log)" 
+                  placeholder={config.isDev ? "Type a message... (Logs are in dev.log, type /dev for info)" : "Type a message..."} 
                 />
               </Box>
             </Box>
