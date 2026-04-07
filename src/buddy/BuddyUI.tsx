@@ -243,7 +243,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
               <Box key={index} flexDirection="column" marginTop={mt} marginBottom={0}>
                 {msg.role === 'user' && (
                   <>
-                    <Box marginBottom={1}><Text bold color="magenta">◆ You</Text></Box>
+                    <Box marginBottom={1}><Text bold color="green">◆ You</Text></Box>
                     <Box paddingLeft={2}><Markdown>{msg.content}</Markdown></Box>
                   </>
                 )}
@@ -300,7 +300,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             {/* Status Bar */}
             <Box marginBottom={1} justifyContent="space-between">
               <Box>
-                <Text backgroundColor="magenta" color="black" bold> LITE </Text>
+                <Text backgroundColor="green" color="black" bold> LITE </Text>
                 <Text color="gray"> │ {config.model} │ {process.cwd()}</Text>
               </Box>
               <Box>
@@ -311,7 +311,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             {/* Input Field */}
             <Box>
               <Box marginRight={1}>
-                <Text color={appState === 'error' ? 'red' : 'magenta'} bold>❯</Text>
+                <Text color={appState === 'error' ? 'red' : 'green'} bold>❯</Text>
               </Box>
               <Box flexGrow={1}>
                 {/* @ts-ignore */}
