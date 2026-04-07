@@ -49,7 +49,14 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
   const [frameIdx, setFrameIdx] = useState(0);
 
   // Dev Mode & Inspector
+  const [isDevMenuOpen, setIsDevMenuOpen] = useState(false);
   const [debugLogs, setDebugLogs] = useState<any[]>([]);
+
+  useInput((input, key) => {
+    if (key.escape && isDevMenuOpen) {
+      setIsDevMenuOpen(false);
+    }
+  });
 
   const isProcessing = appState === 'thinking' || appState === 'working';
 
@@ -85,6 +92,15 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
     if (!trimmed) return;
     if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
       exit();
+      return;
+    }
+    if (trimmed.toLowerCase() === '/dev') {
+      if (config.isDev) {
+        setIsDevMenuOpen(true);
+      } else {
+        setHistory(prev => [...prev, { role: 'assistant', content: '⚠️ Dev mode is not enabled. Restart with `npm run dev`.' }]);
+      }
+      setInput('');
       return;
     }
 
@@ -292,18 +308,9 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
           </Box>
         )}
 
-        {/* 🛠️ Dev Logs Popup (Compact Modal Style Overlaying Input) */}
-        {isDevMenuOpen && (
-          <Box 
-            borderStyle="round" 
-            borderColor="yellow" 
-            flexDirection="column" 
-            paddingX={2} 
-            paddingY={1} 
-            marginY={1}
-            width="90%"
-            alignSelf="center"
-          >
+        {/* Dynamic Bottom Area: Dev Logs OR Input */}
+        {isDevMenuOpen ? (
+          <Box flexDirection="column" borderStyle="round" borderColor="yellow" marginY={1}>
             <Box borderBottom={false} marginBottom={1} justifyContent="space-between">
               <Text bold color="yellow">⚙️ Dev Logs Inspector (Recent)</Text>
               <Text color="gray">esc to close</Text>
@@ -316,43 +323,42 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
                   <Text color={log.event === 'request' ? 'blue' : 'green'} bold>
                     {log.event === 'request' ? '↑ API Request' : '↓ API Response'} (Loop {log.data.loop})
                   </Text>
-                  <Text color="gray">{JSON.stringify(log.data).substring(0, 200)}{JSON.stringify(log.data).length > 200 ? '...' : ''}</Text>
+                  <Text color="gray">{JSON.stringify(log.data).substring(0, 150)}{JSON.stringify(log.data).length > 150 ? '...' : ''}</Text>
                 </Box>
               ))
             )}
           </Box>
-        )}
-
-        {/* ⬇️ Fixed Bottom Area (Status + Input) */}
-        {(appState === 'idle' || appState === 'success' || appState === 'error') && (
-          <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="gray" paddingX={1} paddingTop={1}>
-            {/* Status Bar */}
-            <Box marginBottom={1} justifyContent="space-between">
-              <Box>
-                <Text color="cyan">LiteAgent (CLI)</Text>
-                <Text color="gray"> · {config.model} · {process.cwd()}</Text>
+        ) : (
+          (appState === 'idle' || appState === 'success' || appState === 'error') && (
+            <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="gray" paddingX={1} paddingTop={1}>
+              {/* Status Bar */}
+              <Box marginBottom={1} justifyContent="space-between">
+                <Box>
+                  <Text color="cyan">LiteAgent (CLI)</Text>
+                  <Text color="gray"> · {config.model} · {process.cwd()}</Text>
+                </Box>
+                <Box>
+                  <Text color="gray">ctrl+c exit</Text>
+                </Box>
               </Box>
+
+              {/* Input Area */}
               <Box>
-                <Text color="gray">ctrl+c exit</Text>
+                <Box marginRight={1}>
+                  <Text color={appState === 'error' ? 'red' : 'cyan'}>▐</Text>
+                </Box>
+                <Box flexGrow={1}>
+                  {/* @ts-ignore */}
+                  <TextInput 
+                    value={input} 
+                    onChange={setInput} 
+                    onSubmit={handleSubmit} 
+                    placeholder="Type a message or /dev for logs..." 
+                  />
+                </Box>
               </Box>
             </Box>
-
-            {/* Input Area */}
-            <Box>
-              <Box marginRight={1}>
-                <Text color={appState === 'error' ? 'red' : 'cyan'}>▐</Text>
-              </Box>
-              <Box flexGrow={1}>
-                {/* @ts-ignore */}
-                <TextInput 
-                  value={input} 
-                  onChange={setInput} 
-                  onSubmit={handleSubmit} 
-                  placeholder={isDevMenuOpen ? "Press ESC to close Dev Logs..." : "Type a message or /dev for logs..."} 
-                />
-              </Box>
-            </Box>
-          </Box>
+          )
         )}
       </Box>
     </>
