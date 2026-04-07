@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { render, Box, Text, Static, useInput, useApp } from 'ink';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -30,6 +30,11 @@ export class BuddyUI {
 // ---------------------------------------------------------
 type AgentState = 'idle' | 'thinking' | 'working' | 'success' | 'error';
 
+type HistoryItem = 
+  | { role: 'user' | 'assistant'; content: string }
+  | { role: 'tool'; toolName: string; args: string }
+  | { role: 'tool_result'; toolName: string; result: string };
+
 const LiteAgentApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
   const { exit } = useApp();
 
@@ -41,13 +46,14 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
     { role: 'system', content: initialSystemPrompt }
   ]);
   
-  const [history, setHistory] = useState<Message[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [input, setInput] = useState('');
   
   // Advanced State Tracking
   const [appState, setAppState] = useState<AgentState>('idle');
   const [statusText, setStatusText] = useState('Ready');
   const [currentStream, setCurrentStream] = useState('');
+  const currentStreamRef = useRef(''); // Use ref to safely flush in async loop
   const [frameIdx, setFrameIdx] = useState(0);
 
   // We keep debugLogs in state in case we want to show a counter or indicator, but we will write to file.
@@ -129,23 +135,38 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
             setAppState('thinking');
             setStatusText('Thinking...');
             setCurrentStream(event.content);
+            currentStreamRef.current = event.content;
             break;
           case 'tool_start':
             setAppState('working');
             setStatusText(`Executing Tool [${event.toolName}]...`);
+            // 💡 Flush the "thought process" before the tool execution into history
+            setHistory(prev => {
+              const newHist = [...prev];
+              // Only push if there's actual thinking content before the tool call
+              if (currentStreamRef.current && currentStreamRef.current.trim()) {
+                newHist.push({ role: 'assistant', content: currentStreamRef.current.trim() });
+              }
+              newHist.push({ role: 'tool', toolName: event.toolName, args: event.args });
+              return newHist;
+            });
+            setCurrentStream('');
+            currentStreamRef.current = '';
             break;
           case 'tool_end':
             setAppState('thinking');
             setStatusText(`Tool [${event.toolName}] finished.`);
+            setHistory(prev => [...prev, { role: 'tool_result', toolName: event.toolName, result: event.result }]);
             break;
           case 'completed':
             setMessages(event.finalMessages);
             if (event.content && event.content.trim()) {
-              setHistory(prev => [...prev, { role: 'assistant', content: event.content }]);
-            } else {
-              setHistory(prev => [...prev, { role: 'assistant', content: '✅ Task completed successfully.' }]);
+              setHistory(prev => [...prev, { role: 'assistant', content: event.content.trim() }]);
+            } else if (currentStreamRef.current && currentStreamRef.current.trim()) {
+              setHistory(prev => [...prev, { role: 'assistant', content: currentStreamRef.current.trim() }]);
             }
             setCurrentStream('');
+            currentStreamRef.current = '';
             
             setAppState('success');
             setTimeout(() => setAppState('idle'), 2500);
@@ -184,20 +205,36 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
       <Static items={history}>
         {(msg, index) => (
           <Box key={index} flexDirection="column" marginTop={1} marginBottom={1}>
-            <Box marginBottom={1}>
-              {msg.role === 'user' ? (
-                <Text bold color="white">You</Text>
-              ) : (
-                <Text bold color="cyan">■ LiteAgent</Text>
-              )}
-            </Box>
-            <Box paddingLeft={msg.role === 'user' ? 0 : 2}>
-              {msg.role === 'assistant' || msg.role === 'user' ? (
-                <Markdown>{msg.content}</Markdown>
-              ) : (
-                <Text color="gray">{msg.content}</Text>
-              )}
-            </Box>
+            {msg.role === 'user' && (
+              <>
+                <Box marginBottom={1}><Text bold color="white">You</Text></Box>
+                <Box paddingLeft={0}><Markdown>{msg.content}</Markdown></Box>
+              </>
+            )}
+            
+            {msg.role === 'assistant' && (
+              <>
+                <Box marginBottom={1}><Text bold color="cyan">■ LiteAgent</Text></Box>
+                <Box paddingLeft={2}><Markdown>{msg.content}</Markdown></Box>
+              </>
+            )}
+
+            {msg.role === 'tool' && (
+              <Box paddingLeft={2} flexDirection="column" borderLeft={true} borderStyle="single" borderColor="yellow">
+                <Text color="yellow">⚙️  Calling Tool: <Text bold>{msg.toolName}</Text></Text>
+                <Text color="gray">{msg.args}</Text>
+              </Box>
+            )}
+
+            {msg.role === 'tool_result' && (
+              <Box paddingLeft={2} flexDirection="column" borderLeft={true} borderStyle="single" borderColor="green">
+                <Text color="green">✓  Result: <Text bold>{msg.toolName}</Text></Text>
+                <Text color="gray">
+                  {msg.result.substring(0, 300)}
+                  {msg.result.length > 300 ? '...\n(truncated)' : ''}
+                </Text>
+              </Box>
+            )}
           </Box>
         )}
       </Static>
