@@ -168,8 +168,9 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
             setCurrentStream('');
             currentStreamRef.current = '';
             
-            setAppState('success');
-            setTimeout(() => setAppState('idle'), 2500);
+            // Go straight to idle to instantly remove the "Thinking..." block from the screen.
+            setAppState('idle');
+            setStatusText('Ready');
             break;
           case 'error':
             const errorMsg = { role: 'assistant' as const, content: `❌ Error: ${event.error.message}` };
@@ -220,14 +221,16 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
             )}
 
             {msg.role === 'tool' && (
-              <Box paddingLeft={2} flexDirection="column" borderLeft={true} borderStyle="single" borderColor="yellow">
-                <Text color="yellow">⚙️  Calling Tool: <Text bold>{msg.toolName}</Text></Text>
+              <Box paddingLeft={2} flexDirection="row">
+                <Text color="yellow">⚙️  Calling Tool: </Text>
+                <Text color="yellow" bold>{msg.toolName}</Text>
               </Box>
             )}
 
             {msg.role === 'tool_result' && (
-              <Box paddingLeft={2} flexDirection="column" borderLeft={true} borderStyle="single" borderColor="green">
-                <Text color="green">✓  Tool Result: <Text bold>{msg.toolName}</Text></Text>
+              <Box paddingLeft={2} flexDirection="row">
+                <Text color="green">✓  Tool Result: </Text>
+                <Text color="green" bold>{msg.toolName}</Text>
               </Box>
             )}
           </Box>
