@@ -212,12 +212,32 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
           </Box>
         )}
 
-        {/* Dev Logs Popup (OpenCode Style) */}
+        {/* Status Bar */}
+        <Box marginTop={1} justifyContent="space-between">
+          <Box>
+            <Text color="cyan">LiteAgent (CLI)</Text>
+            <Text color="gray"> · {config.model} · {process.cwd()}</Text>
+          </Box>
+          <Box>
+            <Text color="gray">ctrl+c exit</Text>
+          </Box>
+        </Box>
+
+        {/* Dev Logs Popup (Modal Style) */}
         {isDevMenuOpen && (
-          <Box borderStyle="single" borderColor="yellow" flexDirection="column" paddingX={2} paddingY={1} marginY={1}>
+          <Box 
+            borderStyle="round" 
+            borderColor="yellow" 
+            flexDirection="column" 
+            paddingX={2} 
+            paddingY={1} 
+            marginY={1}
+            width="80%"
+            alignSelf="center"
+          >
             <Box borderBottom={false} marginBottom={1} justifyContent="space-between">
-              <Text bold color="yellow">Select / View Dev Logs</Text>
-              <Text color="gray">esc</Text>
+              <Text bold color="yellow">⚙️ Dev Logs Inspector</Text>
+              <Text color="gray">esc to close</Text>
             </Box>
             {debugLogs.length === 0 ? (
               <Text color="gray">No logs recorded yet...</Text>
@@ -234,7 +254,7 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
           </Box>
         )}
 
-        {/* Input Area (Always at bottom) */}
+        {/* Input Area (Always at absolute bottom) */}
         {(appState === 'idle' || appState === 'success' || appState === 'error') && (
           <Box flexDirection="column" marginTop={isDevMenuOpen ? 0 : 1}>
             <Box>
@@ -248,17 +268,6 @@ Language preference: ${config.language || 'en-US'}.\n\n${skillInstructions}`;
             </Box>
           </Box>
         )}
-        
-        {/* Status Bar */}
-        <Box marginTop={1} justifyContent="space-between">
-          <Box>
-            <Text color="cyan">LiteAgent (CLI)</Text>
-            <Text color="gray"> · {config.model} · {process.cwd()}</Text>
-          </Box>
-          <Box>
-            <Text color="gray">ctrl+c exit</Text>
-          </Box>
-        </Box>
       </Box>
     </>
   );
