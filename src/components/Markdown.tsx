@@ -27,25 +27,25 @@ export const Markdown: React.FC<MarkdownProps> = ({ children }) => {
   const renderToken = (token: any, index: number) => {
     switch (token.type) {
       case 'heading':
-        return (
-          <Box key={index} marginBottom={1} marginTop={1}>
-            <Text bold color="cyan">
-              {`${'#'.repeat(token.depth)} ${extractText(token.tokens || [])}`}
-            </Text>
-          </Box>
-        );
+          return (
+            <Box key={index} marginTop={1} marginBottom={1}>
+              <Text bold color="cyan">
+                {'#'.repeat(token.depth)} {extractText(token.tokens || [])}
+              </Text>
+            </Box>
+          );
       case 'paragraph':
         return (
-          <Box key={index} marginBottom={1}>
+          <Box key={index} marginBottom={0}>
             <Text>{extractText(token.tokens || [])}</Text>
           </Box>
         );
       case 'list':
         return (
-          <Box key={index} flexDirection="column" marginBottom={1} paddingLeft={2}>
+          <Box key={index} flexDirection="column" paddingLeft={2} marginTop={1} marginBottom={1}>
             {token.items.map((item: any, i: number) => (
-              <Box key={i}>
-                <Text color="yellow"> • </Text>
+              <Box key={i} flexDirection="row">
+                <Text color="cyan">• </Text>
                 <Text>{extractText(item.tokens || [])}</Text>
               </Box>
             ))}
@@ -53,8 +53,9 @@ export const Markdown: React.FC<MarkdownProps> = ({ children }) => {
         );
       case 'code':
         return (
-          <Box key={index} borderStyle="round" borderColor="gray" paddingX={1} marginY={1}>
-            <Text color="green">{token.text}</Text>
+          <Box key={index} flexDirection="column" borderStyle="round" borderColor="gray" paddingX={1} marginTop={1} marginBottom={1}>
+            <Text color="gray">{token.lang || 'text'}</Text>
+            <Text>{token.text}</Text>
           </Box>
         );
       case 'space':

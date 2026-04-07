@@ -233,9 +233,19 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                 mt = 1; // 1 blank line between turns (which is mt=2 in CSS terms, but ink Box handles it differently)
               }
 
-              // Hide the "■ LiteAgent" header if the AI is continuing its thought process
+              // Handle spacing within AI's turn
               if (isPrevAI && isCurrAI) {
                 showHeader = false;
+                
+                // Add a blank line before a new thinking block (assistant), 
+                // but keep tool calls tightly coupled to their thinking block.
+                if (msg.role === 'assistant' && prevRole === 'tool') {
+                  mt = 1; 
+                } else if (msg.role === 'assistant' && prevRole === 'assistant') {
+                  mt = 1;
+                } else if (msg.role === 'tool') {
+                  mt = 0; // Tool call directly under the thinking block
+                }
               }
             }
 
@@ -251,13 +261,13 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                 {msg.role === 'assistant' && (
                   <>
                     {showHeader && <Box marginBottom={1}><Text bold color="cyan">■ LiteAgent</Text></Box>}
-                    <Box paddingLeft={2}><Markdown>{msg.content}</Markdown></Box>
+                    <Box paddingLeft={2} marginBottom={0}><Markdown>{msg.content}</Markdown></Box>
                   </>
                 )}
 
                 {msg.role === 'tool' && (
                   <>
-                    {showHeader && <Box marginBottom={1}><Text bold color="cyan">■ LiteAgent</Text></Box>}
+                    {showHeader && <Box marginBottom={0}><Text bold color="cyan">■ LiteAgent</Text></Box>}
                     <Box paddingLeft={2} flexDirection="row">
                       <Text color="yellow">⚙️  Calling Tool: </Text>
                       <Text color="yellow" bold>{msg.toolName}</Text>
