@@ -3,11 +3,12 @@ import { ReadFileTool, WriteFileTool, EditFileTool, RenameFileTool, DeleteFileTo
 import { BashTool } from './system/bashTool.js';
 import { SkillTool } from './system/skillTool.js';
 import { BaseTool } from './base.js';
+import type { SkillDefinition } from '../skills/skillLoader.js';
 
 // Central Registry of all system tools
 let registry: BaseTool[] = [];
 
-export function getSystemTools(skills: { name: string; instructions: string }[] = []): ToolSchema[] {
+export function getSystemTools(skills: SkillDefinition[] = []): ToolSchema[] {
   registry = [
     new ReadFileTool(),
     new WriteFileTool(),
