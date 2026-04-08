@@ -28,10 +28,14 @@ export class SkillTool extends BaseTool {
       let desc = `- ${s.name}`;
       if (s.description) desc += `: ${s.description}`;
       if (s.arguments && s.arguments.length > 0) desc += ` (args: ${s.arguments.join(', ')})`;
+      desc += ` [context: ${s.context || 'inline'}]`;
       return desc;
     }).join('\n');
 
-    this.description = `Execute a skill. You MUST use this tool to invoke any available skill.\nAvailable skills:\n${skillDescriptions || 'none'}`;
+    this.description = `Execute a skill. You MUST use this tool to invoke any available skill.
+Skills with [context: inline] will return instructions for YOU to execute.
+Skills with [context: fork] will spawn a sub-agent to execute the task in the background and return the final result.
+Available skills:\n${skillDescriptions || 'none'}`;
   }
 
   async call(input: { skill: string; args?: string }, context?: { config: EngineConfig; tools: ToolSchema[] }): Promise<string> {
@@ -68,6 +72,13 @@ export class SkillTool extends BaseTool {
       });
     }
 
+    const skillContext = targetSkill.context || 'inline'; // Default to inline (like Claude Code)
+
+    if (skillContext === 'inline') {
+      return `[Skill Instructions Loaded (Inline Mode)]\n\nPlease follow these instructions to complete the user's request:\n\n---\n${finalInstructions}\n---\n\nYou are now expected to execute the above skill instructions using the tools available to you.`;
+    }
+
+    // --- Fork Context (Sub-Agent Execution) ---
     // Create a sub-agent context
     const subAgentSystemPrompt = `You are a specialized sub-agent executing the skill: ${skill}.
 Your instructions are as follows:

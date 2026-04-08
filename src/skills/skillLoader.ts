@@ -8,6 +8,7 @@ export interface SkillDefinition {
   description?: string;
   arguments?: string[];
   allowedTools?: string[];
+  context?: 'inline' | 'fork';
   instructions: string;
 }
 
@@ -48,6 +49,7 @@ export async function loadSkills(): Promise<SkillData> {
           let description = `Execute skill: ${folderName}`;
           let args: string[] = [];
           let allowedTools: string[] | undefined = undefined;
+          let contextMode: 'inline' | 'fork' | undefined = undefined;
           let instructions = rawContent;
 
           // Parse YAML Frontmatter if present
@@ -71,6 +73,9 @@ export async function loadSkills(): Promise<SkillData> {
               if (parsedYaml['allowed-tools'] && Array.isArray(parsedYaml['allowed-tools'])) {
                 allowedTools = parsedYaml['allowed-tools'];
               }
+              if (parsedYaml.context === 'inline' || parsedYaml.context === 'fork') {
+                contextMode = parsedYaml.context;
+              }
             } catch (e) {
               console.error(`Failed to parse frontmatter in skill ${folderName}:`, e);
               // Fallback to treating entire file as instructions
@@ -83,6 +88,7 @@ export async function loadSkills(): Promise<SkillData> {
             description,
             arguments: args,
             allowedTools,
+            context: contextMode,
             instructions
           });
         }
