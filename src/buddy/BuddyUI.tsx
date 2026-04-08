@@ -154,7 +154,12 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                 // Also ignore pushing if it is just "Reasoning loop X..."
                 const content = currentStreamRef.current.trim();
                 if (!content.startsWith('Reasoning loop ')) {
-                  newHist.push({ role: 'assistant', content: `_Thought: ${content}_` });
+                  // Check if the last item is exactly the same to prevent duplicates
+                  const lastItem = newHist[newHist.length - 1];
+                  const formattedContent = `_Thought: ${content}_`;
+                  if (!lastItem || lastItem.role !== 'assistant' || lastItem.content !== formattedContent) {
+                    newHist.push({ role: 'assistant', content: formattedContent });
+                  }
                 }
               }
               newHist.push({ role: 'tool', toolName: event.toolName, args: event.args });
@@ -168,10 +173,24 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
           case 'tool_end':
             setAppState('thinking');
             break;
-          case 'completed':
+          case 'completed': {
             setMessages(event.finalMessages);
             const finalContent = event.content?.trim() || currentStreamRef.current?.trim();
             if (finalContent && !finalContent.startsWith('Reasoning loop ')) {
+              // Check if the final content is identical to the last pushed thought in history
+              setHistory(prev => {
+                const newHist = [...prev];
+                const lastItem = newHist[newHist.length - 1];
+                const formattedThought = `_Thought: ${finalContent}_`;
+                
+                // If the last thing pushed to history was exactly this content (wrapped as a thought),
+                // we drop the thought version and replace it with the final clean version.
+                if (lastItem && lastItem.role === 'assistant' && lastItem.content === formattedThought) {
+                  newHist.pop(); // Remove the thought version
+                }
+                return newHist;
+              });
+              
               // Usually the final content is the actual answer, so we don't wrap it in 'Thought:'
               setFinishedResponse(finalContent);
             }
@@ -181,6 +200,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             // Go straight to idle to instantly remove the "Thinking..." block from the screen.
             setAppState('idle');
             break;
+          }
           case 'error':
             const errorMsg = { role: 'assistant' as const, content: `❌ Error: ${event.error.message}` };
             setMessages([...newMessages, errorMsg]);
