@@ -135,6 +135,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             break;
           case 'thinking':
             setAppState('thinking');
+            // We still track the stream for internal history/tool logic, but do not render it in the UI
             setCurrentStream(event.content);
             currentStreamRef.current = event.content;
             break;
@@ -264,21 +265,15 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
 
       <Box flexDirection="column">
         {/* Active Processing Area */}
-        {(appState === 'thinking' || appState === 'working') && (
+        {(appState === 'working') && (
           <Box flexDirection="column" marginTop={1} paddingLeft={0} marginBottom={1}>
             <Box flexDirection="row">
               <Text bold color="cyan">■ LiteAgent: </Text>
               <Text color="yellow" italic>
-                {appState === 'thinking' ? 'Thinking... ' : 'Working... '}
+                Working...
               </Text>
             </Box>
-            {currentStream.trim() ? (
-              <Box marginTop={0} paddingLeft={2}>
-                <Text color="gray" dimColor italic>
-                  {currentStream}
-                </Text>
-              </Box>
-            ) : null}
+            {/* currentStream rendering has been removed to silence thinking output */}
           </Box>
         )}
 
