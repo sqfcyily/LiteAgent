@@ -61,7 +61,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
 
   useEffect(() => {
     if (config.isDev) {
-      const logPath = path.join(process.cwd(), 'dev.log');
+      const logPath = path.join(process.cwd(), 'lite-agent-dev.log');
       fs.writeFileSync(logPath, `=== LiteAgent Dev Session Started at ${new Date().toISOString()} ===\n`, 'utf-8');
     }
   }, [config.isDev]);
@@ -103,7 +103,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
       return;
     }
     if (trimmed.toLowerCase() === '/dev') {
-      setHistory(prev => [...prev, { role: 'assistant', content: 'ℹ️ Dev mode logs are now written to `dev.log` in your current directory. Use `tail -f dev.log` in another terminal to monitor.' }]);
+      setHistory(prev => [...prev, { role: 'assistant', content: 'ℹ️ Dev mode logs are now written to `lite-agent-dev.log` in your current directory. Use `tail -f lite-agent-dev.log` in another terminal to monitor.' }]);
       setInput('');
       return;
     }
@@ -128,7 +128,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
         switch (event.type) {
           case 'debug':
             if (config.isDev) {
-              const logPath = path.join(process.cwd(), 'dev.log');
+              const logPath = path.join(process.cwd(), 'lite-agent-dev.log');
               const logEntry = `[${new Date().toISOString()}] ${event.event === 'request' ? '↑ API Request' : '↓ API Response'} (Loop ${event.data.loop})\n${JSON.stringify(event.data, null, 2)}\n\n`;
               fs.appendFileSync(logPath, logEntry, 'utf-8');
             }
@@ -300,7 +300,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                   value={input} 
                   onChange={setInput} 
                   onSubmit={handleSubmit} 
-                  placeholder={config.isDev ? "Type a message... (Logs are in dev.log, type /dev for info)" : "Type a message..."} 
+                  placeholder={config.isDev ? "Type a message... (Logs are in lite-agent-dev.log)" : "Type a message..."} 
                 />
               </Box>
             </Box>
