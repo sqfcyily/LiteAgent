@@ -26,6 +26,10 @@ export function isToolConcurrencySafe(name: string): boolean {
   return tool ? tool.isConcurrencySafe : false;
 }
 
+export function getToolInstance(name: string): BaseTool | undefined {
+  return registry.find(t => t.name === name);
+}
+
 export async function runTool(name: string, args: any, context?: any): Promise<string> {
   const tool = registry.find(t => t.name === name);
   if (tool) {

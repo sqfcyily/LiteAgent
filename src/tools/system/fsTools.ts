@@ -1,3 +1,5 @@
+import React from 'react';
+import { Text, Box } from 'ink';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { BaseTool } from '../base.js';
@@ -15,6 +17,24 @@ export class ReadFileTool extends BaseTool {
     },
     required: ['file_path']
   };
+
+  renderToolUseMessage(args: { file_path: string }) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'yellow' }, '📖 Reading file: '),
+      React.createElement(Text, { color: 'yellow', bold: true }, args.file_path || 'unknown')
+    );
+  }
+
+  renderToolResultMessage(args: { file_path: string }, result: string) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'green' }, '✓ Read file: '),
+      React.createElement(Text, { color: 'green', bold: true }, args.file_path || 'unknown')
+    );
+  }
 
   async call(input: { file_path: string }): Promise<string> {
     try {
@@ -38,6 +58,24 @@ export class WriteFileTool extends BaseTool {
     },
     required: ['file_path', 'content']
   };
+
+  renderToolUseMessage(args: { file_path: string }) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'yellow' }, '✏️  Writing to file: '),
+      React.createElement(Text, { color: 'yellow', bold: true }, args.file_path || 'unknown')
+    );
+  }
+
+  renderToolResultMessage(args: { file_path: string }, result: string) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'green' }, '✓ Wrote to file: '),
+      React.createElement(Text, { color: 'green', bold: true }, args.file_path || 'unknown')
+    );
+  }
 
   async call(input: { file_path: string, content: string }): Promise<string> {
     try {

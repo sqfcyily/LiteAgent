@@ -136,7 +136,7 @@ export async function* runEngine(
       for (const batch of batches) {
         // Yield start events for all tools in the batch
         for (const tc of batch) {
-          yield { type: 'tool_start', toolName: tc.function.name, args: tc.function.arguments };
+          yield { type: 'tool_start', toolCallId: tc.id, toolName: tc.function.name, args: tc.function.arguments };
         }
 
         // Execute batch concurrently
@@ -156,19 +156,19 @@ export async function* runEngine(
             const decision = checkPermissions(tc.function.name, argsObj, pCtx);
             
             if (decision === 'deny') {
-              return { tc, result: `Tool execution denied by permission pipeline (Rule Matched).` };
+              return { tc, result: `Tool execution denied by permission pipeline (Rule Matched).`, isError: true };
             }
 
             const result = await runTool(tc.function.name, argsObj, { config, tools });
-            return { tc, result };
+            return { tc, result, isError: false };
           } catch (e: any) {
-            return { tc, result: `Error executing tool: ${e.message}` };
+            return { tc, result: `Error executing tool: ${e.message}`, isError: true };
           }
         }));
 
         // Yield end events and append to context sequentially to maintain deterministic order
         for (const res of results) {
-          yield { type: 'tool_end', toolName: res.tc.function.name, result: res.result };
+          yield { type: 'tool_end', toolCallId: res.tc.id, toolName: res.tc.function.name, args: res.tc.function.arguments, result: res.result, isError: res.isError };
           messages.push({
             role: 'tool',
             content: res.result,

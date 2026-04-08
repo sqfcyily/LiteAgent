@@ -29,8 +29,8 @@ export interface ToolSchema {
 // Emitted during the engine loop to update channels
 export type EngineEvent = 
   | { type: 'thinking'; content: string }
-  | { type: 'tool_start'; toolName: string; args: string }
-  | { type: 'tool_end'; toolName: string; result: string }
+  | { type: 'tool_start'; toolCallId?: string; toolName: string; args?: string }
+  | { type: 'tool_end'; toolCallId?: string; toolName: string; args?: string; result: string; isError?: boolean }
   | { type: 'completed'; content: string; finalMessages: Message[] }
   | { type: 'error'; error: Error }
   | { type: 'debug'; event: 'request' | 'response'; data: any };

@@ -1,3 +1,5 @@
+import React from 'react';
+import { Text, Box } from 'ink';
 import { BaseTool } from '../base.js';
 import { runEngine, EngineConfig } from '../../services/agentEngine.js';
 import type { ToolSchema, Message } from '../../utils/types.js';
@@ -36,6 +38,24 @@ export class SkillTool extends BaseTool {
 Skills with [context: inline] will return instructions for YOU to execute.
 Skills with [context: fork] will spawn a sub-agent to execute the task in the background and return the final result.
 Available skills:\n${skillDescriptions || 'none'}`;
+  }
+
+  renderToolUseMessage(args: { skill: string, args?: string }) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'magenta' }, '✨ Using skill: '),
+      React.createElement(Text, { color: 'magenta', bold: true }, args.skill || 'unknown')
+    );
+  }
+
+  renderToolResultMessage(args: { skill: string, args?: string }, result: string) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'green' }, '✓ Skill completed: '),
+      React.createElement(Text, { color: 'green', bold: true }, args.skill || 'unknown')
+    );
   }
 
   async call(input: { skill: string; args?: string }, context?: { config: EngineConfig; tools: ToolSchema[] }): Promise<string> {

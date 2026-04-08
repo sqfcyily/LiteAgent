@@ -1,3 +1,5 @@
+import React from 'react';
+import { Text, Box } from 'ink';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { BaseTool } from '../base.js';
@@ -14,6 +16,24 @@ export class BashTool extends BaseTool {
     },
     required: ['command']
   };
+
+  renderToolUseMessage(args: { command: string }) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'yellow' }, '🖥️  Running command: '),
+      React.createElement(Text, { color: 'yellow', bold: true }, args.command || 'unknown')
+    );
+  }
+
+  renderToolResultMessage(args: { command: string }, result: string) {
+    return React.createElement(
+      Box,
+      { paddingLeft: 2, flexDirection: 'row' },
+      React.createElement(Text, { color: 'green' }, '✓ Command completed: '),
+      React.createElement(Text, { color: 'green', bold: true }, args.command || 'unknown')
+    );
+  }
 
   async call(input: { command: string }): Promise<string> {
     try {

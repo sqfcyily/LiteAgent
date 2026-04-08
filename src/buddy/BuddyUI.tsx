@@ -6,6 +6,7 @@ import TextInput from 'ink-text-input';
 import { Markdown } from '../components/Markdown.js';
 import { runEngine, EngineConfig } from '../services/agentEngine.js';
 import type { EngineEvent, Message, ToolSchema } from '../utils/types.js';
+import { getToolInstance } from '../tools/index.js';
 
 export class BuddyUI {
   private config: EngineConfig;
@@ -32,7 +33,7 @@ type AgentState = 'idle' | 'thinking' | 'working' | 'success' | 'error';
 
 type HistoryItem = 
   | { role: 'user' | 'assistant'; content: string }
-  | { role: 'tool'; toolName: string; args: string };
+  | { role: 'tool'; toolName: string; args: string; result?: string; isError?: boolean };
 
 const LiteAgentApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
   const { exit } = useApp();
@@ -55,7 +56,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
   const [currentStream, setCurrentStream] = useState('');
   const currentStreamRef = useRef(''); // Use ref to safely flush in async loop
   const [finishedResponse, setFinishedResponse] = useState<string | null>(null);
-  const [frameIdx, setFrameIdx] = useState(0);
+  const [activeTools, setActiveTools] = useState<Array<{ id: string, name: string, args: string }>>([]);
 
   // We keep debugLogs in state in case we want to show a counter or indicator, but we will write to file.
   const [debugLogs, setDebugLogs] = useState<any[]>([]);
@@ -79,22 +80,12 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
     if (appState === 'idle') return idleIcon;
     if (appState === 'success') return successIcon;
     if (appState === 'error') return errorIcon;
-    return spinnerFrames[frameIdx % spinnerFrames.length];
+    return '●';
   };
 
   useEffect(() => {
-    // 💡 UX Fix: Disable continuous animations in Dev Mode to allow smooth terminal scrolling
-    if (config.isDev) {
-      setFrameIdx(0);
-      return;
-    }
-
-    const speed = isProcessing ? 80 : 800; // Faster for spinner
-    const timer = setInterval(() => {
-      setFrameIdx(prev => prev + 1);
-    }, speed);
-    return () => clearInterval(timer);
-  }, [isProcessing, config.isDev]);
+    // No continuous animations needed
+  }, []);
 
   const handleSubmit = async (text: string) => {
     const trimmed = text.trim();
@@ -147,6 +138,9 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             break;
           case 'tool_start':
             setAppState('working');
+            // Add tool to activeTools list
+            setActiveTools(prev => [...prev, { id: event.toolCallId || Date.now().toString(), name: event.toolName, args: event.args || '{}' }]);
+            
             // 💡 Flush the "thought process" before the tool execution into history
             setHistory(prev => {
               const newHist = [...prev];
@@ -163,7 +157,6 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                   }
                 }
               }
-              newHist.push({ role: 'tool', toolName: event.toolName, args: event.args });
               return newHist;
             });
             // We clear the stream so the Markdown block disappears,
@@ -173,6 +166,19 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             break;
           case 'tool_end':
             setAppState('thinking');
+            setActiveTools(prev => prev.filter(t => t.id !== event.toolCallId));
+            // Push tool completion to history so it renders statically
+            setHistory(prev => {
+              const newHist = [...prev];
+              newHist.push({ 
+                role: 'tool', 
+                toolName: event.toolName, 
+                args: event.args || '{}', 
+                result: event.result,
+                isError: event.isError
+              });
+              return newHist;
+            });
             break;
           case 'completed': {
             setMessages(event.finalMessages);
@@ -296,23 +302,34 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                   </>
                 )}
 
-                {msg.role === 'tool' && (
-                  <>
-                    <Box paddingLeft={2} flexDirection="row">
-                      <Text color="yellow">⚙️  Calling Tool: </Text>
-                      <Text color="yellow" bold>{msg.toolName}</Text>
-                      {msg.toolName === 'Skill' && msg.args && (() => {
-                        try {
-                          const parsed = JSON.parse(msg.args);
-                          if (parsed.skill) {
-                            return <Text color="yellow" bold> ({parsed.skill})</Text>;
-                          }
-                        } catch(e) {}
-                        return null;
-                      })()}
-                    </Box>
-                  </>
-                )}
+                {msg.role === 'tool' && (() => {
+                  const toolInstance = getToolInstance(msg.toolName);
+                  let parsedArgs = {};
+                  try { parsedArgs = JSON.parse(msg.args || '{}'); } catch(e) {}
+                  
+                  if (toolInstance) {
+                    if (msg.isError) {
+                      return toolInstance.renderToolUseErrorMessage(parsedArgs, msg.result || 'Unknown error');
+                    } else {
+                      return toolInstance.renderToolResultMessage(parsedArgs, msg.result || '');
+                    }
+                  } else {
+                    // Fallback rendering
+                    return (
+                      <Box paddingLeft={2} flexDirection="column">
+                        <Box flexDirection="row">
+                          <Text color={msg.isError ? "red" : "green"}>{msg.isError ? "✖" : "✓"} Tool {msg.isError ? "Error" : "Completed"}: </Text>
+                          <Text color={msg.isError ? "red" : "green"} bold>{msg.toolName}</Text>
+                        </Box>
+                        {msg.result && (
+                          <Box paddingLeft={2}>
+                            <Text color="gray" dimColor>{msg.result.substring(0, 200)}{msg.result.length > 200 ? '...' : ''}</Text>
+                          </Box>
+                        )}
+                      </Box>
+                    );
+                  }
+                })()}
               </Box>
             );
           }}
@@ -328,6 +345,30 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                 {appState === 'thinking' ? 'Thinking... ' : 'Working... '}
               </Text>
             </Box>
+            
+            {/* Render active tools in the dynamic area */}
+            {activeTools.length > 0 && (
+              <Box flexDirection="column" marginTop={0}>
+                {activeTools.map(active => {
+                  const toolInstance = getToolInstance(active.name);
+                  let parsedArgs = {};
+                  try { parsedArgs = JSON.parse(active.args); } catch(e) {}
+                  
+                  return (
+                    <Box key={active.id}>
+                      {toolInstance 
+                        ? toolInstance.renderToolUseMessage(parsedArgs) 
+                        : <Box paddingLeft={2} flexDirection="row">
+                            <Text color="yellow">⚙️  Calling Tool: </Text>
+                            <Text color="yellow" bold>{active.name}</Text>
+                          </Box>
+                      }
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+
             {currentStream.trim() ? (
               <Box marginTop={0} paddingLeft={2}>
                 <Text color="gray" dimColor italic>
