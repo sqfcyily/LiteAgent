@@ -2,6 +2,8 @@ import { BaseTool } from '../base.js';
 import { runEngine, EngineConfig } from '../../services/agentEngine.js';
 import type { ToolSchema, Message } from '../../utils/types.js';
 import type { SkillDefinition } from '../../skills/skillLoader.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class SkillTool extends BaseTool {
   name = 'Skill';
@@ -50,6 +52,9 @@ export class SkillTool extends BaseTool {
     let allowedTools = tools;
     if (targetSkill.allowedTools && targetSkill.allowedTools.length > 0) {
       allowedTools = tools.filter(t => targetSkill.allowedTools!.includes(t.function.name));
+    } else {
+      // By default, prevent sub-agents from calling Skill recursively to avoid infinite polling/loops
+      allowedTools = tools.filter(t => t.function.name !== 'Skill');
     }
 
     // Replace $ARGUMENTS in the markdown prompt if args are provided
@@ -84,13 +89,22 @@ Use the provided tools if necessary to complete your task.`;
       // but we await its completion to get the final result.
       const stream = runEngine(subMessages, allowedTools, config);
       for await (const event of stream) {
-        if (event.type === 'completed') {
-          // Find the last assistant message
-          const lastMsg = event.finalMessages[event.finalMessages.length - 1];
-          if (lastMsg && lastMsg.role === 'assistant') {
-            finalResult = lastMsg.content || 'Skill executed successfully with no text output.';
+        if (event.type === 'debug' && config.isDev) {
+          // Log sub-agent API requests to the dev log so they aren't hidden
+          const logPath = path.join(process.cwd(), 'lite-agent-dev.log');
+          fs.appendFileSync(logPath, `\n[${new Date().toISOString()}] [Sub-Agent: ${skill}] ${event.event === 'request' ? '↑ API Request' : '↓ API Response'} (Loop ${event.data.loop})\n${JSON.stringify(event.data, null, 2)}\n`, 'utf-8');
+        } else if (event.type === 'completed') {
+          // Extract the final summary and tools used
+          const assistantMsgs = event.finalMessages.filter(m => m.role === 'assistant');
+          const lastMsg = assistantMsgs[assistantMsgs.length - 1];
+          const summary = (lastMsg && lastMsg.content) ? lastMsg.content : 'Skill executed successfully.';
+          
+          const toolCalls = event.finalMessages.filter(m => m.role === 'tool');
+          if (toolCalls.length > 0) {
+            const toolNames = toolCalls.map(m => m.name).filter(Boolean);
+            finalResult = `${summary}\n\n[System Note: The sub-agent invoked the following tools to complete the task: ${toolNames.join(', ')}]`;
           } else {
-            finalResult = 'Skill executed successfully.';
+            finalResult = summary;
           }
         } else if (event.type === 'error') {
           return `Skill execution failed: ${event.error.message}`;

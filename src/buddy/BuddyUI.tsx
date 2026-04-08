@@ -301,6 +301,15 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                     <Box paddingLeft={2} flexDirection="row">
                       <Text color="yellow">⚙️  Calling Tool: </Text>
                       <Text color="yellow" bold>{msg.toolName}</Text>
+                      {msg.toolName === 'Skill' && msg.args && (() => {
+                        try {
+                          const parsed = JSON.parse(msg.args);
+                          if (parsed.skill) {
+                            return <Text color="yellow" bold> ({parsed.skill})</Text>;
+                          }
+                        } catch(e) {}
+                        return null;
+                      })()}
                     </Box>
                   </>
                 )}
