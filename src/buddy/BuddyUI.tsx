@@ -54,6 +54,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
   const [appState, setAppState] = useState<AgentState>('idle');
   const [currentStream, setCurrentStream] = useState('');
   const currentStreamRef = useRef(''); // Use ref to safely flush in async loop
+  const [finishedResponse, setFinishedResponse] = useState<string | null>(null);
   const [frameIdx, setFrameIdx] = useState(0);
 
   // We keep debugLogs in state in case we want to show a counter or indicator, but we will write to file.
@@ -109,6 +110,9 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
     }
 
     let currentHist = [...history];
+    if (finishedResponse) {
+      currentHist.push({ role: 'assistant', content: finishedResponse });
+    }
 
     const userMsg = { role: 'user' as const, content: text };
     currentHist.push(userMsg);
@@ -120,6 +124,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
     setInput('');
     setAppState('thinking');
     setCurrentStream('');
+    setFinishedResponse(null);
     setDebugLogs([]); // Clear logs for new turn
 
     try {
@@ -168,7 +173,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             const finalContent = event.content?.trim() || currentStreamRef.current?.trim();
             if (finalContent && !finalContent.startsWith('Reasoning loop ')) {
               // Usually the final content is the actual answer, so we don't wrap it in 'Thought:'
-              setHistory(prev => [...prev, { role: 'assistant', content: finalContent }]);
+              setFinishedResponse(finalContent);
             }
             setCurrentStream('');
             currentStreamRef.current = '';
@@ -179,8 +184,14 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
           case 'error':
             const errorMsg = { role: 'assistant' as const, content: `❌ Error: ${event.error.message}` };
             setMessages([...newMessages, errorMsg]);
-            setHistory(prev => [...prev, errorMsg]);
+            setHistory(prev => {
+              const newHist = [...prev];
+              if (finishedResponse) newHist.push({ role: 'assistant', content: finishedResponse });
+              newHist.push(errorMsg);
+              return newHist;
+            });
             setCurrentStream('');
+            setFinishedResponse(null);
             
             setAppState('error');
             setTimeout(() => setAppState('idle'), 3000);
@@ -190,8 +201,14 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
     } catch (e: any) {
       const fatalErrorMsg = { role: 'assistant' as const, content: `❌ Fatal Error: ${e.message}` };
       setMessages([...newMessages, fatalErrorMsg]);
-      setHistory(prev => [...prev, fatalErrorMsg]);
+      setHistory(prev => {
+        const newHist = [...prev];
+        if (finishedResponse) newHist.push({ role: 'assistant', content: finishedResponse });
+        newHist.push(fatalErrorMsg);
+        return newHist;
+      });
       setCurrentStream('');
+      setFinishedResponse(null);
       
       setAppState('error');
       setTimeout(() => setAppState('idle'), 3000);
@@ -265,15 +282,29 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
 
       <Box flexDirection="column">
         {/* Active Processing Area */}
-        {(appState === 'working') && (
+        {(appState === 'thinking' || appState === 'working') && (
           <Box flexDirection="column" marginTop={1} paddingLeft={0} marginBottom={1}>
             <Box flexDirection="row">
               <Text bold color="cyan">■ LiteAgent: </Text>
               <Text color="yellow" italic>
-                Working...
+                {appState === 'thinking' ? 'Thinking... ' : 'Working... '}
               </Text>
             </Box>
-            {/* currentStream rendering has been removed to silence thinking output */}
+            {currentStream.trim() ? (
+              <Box marginTop={0} paddingLeft={2}>
+                <Text color="gray" dimColor italic>
+                  {currentStream}
+                </Text>
+              </Box>
+            ) : null}
+          </Box>
+        )}
+
+        {/* Finished Response Area (Waiting to be pushed to Static on next input) */}
+        {appState === 'idle' && finishedResponse && (
+          <Box flexDirection="column" marginTop={1} marginBottom={0}>
+            <Box marginBottom={0}><Text bold color="cyan">■ LiteAgent: </Text></Box>
+            <Box paddingLeft={2}><Markdown>{finishedResponse}</Markdown></Box>
           </Box>
         )}
 
