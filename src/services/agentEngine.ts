@@ -1,6 +1,6 @@
 import { fetchStream, LLMConfig } from './llmClient.js';
 import type { Message, EngineEvent, ToolSchema, ToolCall } from '../utils/types.js';
-import { runTool } from '../tools/index.js';
+import { runTool, isToolConcurrencySafe } from '../tools/index.js';
 import { compressContext } from './contextManager.js';
 import { checkPermissions, ToolPermissionContext } from '../tools/system/permissionPipeline.js';
 
@@ -113,57 +113,67 @@ export async function* runEngine(
     }
 
     if (toolCallsArr.length > 0) {
+      // Partition tools into batches based on concurrency safety
+      const batches: any[][] = [];
+      let currentBatch: any[] = [];
+
       for (const tc of toolCallsArr) {
-        yield { type: 'tool_start', toolName: tc.function.name, args: tc.function.arguments };
-        try {
-          const argsObj = JSON.parse(tc.function.arguments || '{}');
-
-          // Check permissions
-          const pCtx = config.permissionContext || {
-            mode: 'default',
-            allowRules: [],
-            denyRules: [],
-            askRules: [],
-            bypassAvailable: false
-          };
-
-          const decision = checkPermissions(tc.function.name, argsObj, pCtx);
-          
-          if (decision === 'deny') {
-            const errorMsg = `Tool execution denied by permission pipeline (Rule Matched).`;
-            yield { type: 'tool_end', toolName: tc.function.name, result: errorMsg };
-            messages.push({
-              role: 'tool',
-              content: errorMsg,
-              tool_call_id: tc.id,
-              name: tc.function.name
-            });
-            continue;
+        const isSafe = isToolConcurrencySafe(tc.function.name);
+        if (isSafe) {
+          currentBatch.push(tc);
+        } else {
+          if (currentBatch.length > 0) {
+            batches.push(currentBatch);
+            currentBatch = [];
           }
+          batches.push([tc]);
+        }
+      }
+      if (currentBatch.length > 0) {
+        batches.push(currentBatch);
+      }
 
-          if (decision === 'ask') {
-            // Simplified interactive prompt fallback (Graceful Degradation)
-            // In a real terminal with Ink, this would pause the async generator and await user input
-            // For now, we simulate 'ask' resolving to allow (or auto-rejected depending on config)
-            // yield { type: 'thinking', content: `[Permission Pipeline] Requesting user confirmation for ${tc.function.name}... (Auto-resolved for demo)` };
+      for (const batch of batches) {
+        // Yield start events for all tools in the batch
+        for (const tc of batch) {
+          yield { type: 'tool_start', toolName: tc.function.name, args: tc.function.arguments };
+        }
+
+        // Execute batch concurrently
+        const results = await Promise.all(batch.map(async (tc) => {
+          try {
+            const argsObj = JSON.parse(tc.function.arguments || '{}');
+
+            // Check permissions
+            const pCtx = config.permissionContext || {
+              mode: 'default',
+              allowRules: [],
+              denyRules: [],
+              askRules: [],
+              bypassAvailable: false
+            };
+
+            const decision = checkPermissions(tc.function.name, argsObj, pCtx);
+            
+            if (decision === 'deny') {
+              return { tc, result: `Tool execution denied by permission pipeline (Rule Matched).` };
+            }
+
+            const result = await runTool(tc.function.name, argsObj, { config, tools });
+            return { tc, result };
+          } catch (e: any) {
+            return { tc, result: `Error executing tool: ${e.message}` };
           }
+        }));
 
-          const result = await runTool(tc.function.name, argsObj, { config, tools });
-          yield { type: 'tool_end', toolName: tc.function.name, result };
+        // Yield end events and append to context sequentially to maintain deterministic order
+        for (const res of results) {
+          yield { type: 'tool_end', toolName: res.tc.function.name, result: res.result };
           messages.push({
             role: 'tool',
-            content: result,
-            tool_call_id: tc.id,
-            name: tc.function.name
-          });
-        } catch (e: any) {
-          const errorMsg = `Error executing tool: ${e.message}`;
-          yield { type: 'tool_end', toolName: tc.function.name, result: errorMsg };
-          messages.push({
-            role: 'tool',
-            content: errorMsg,
-            tool_call_id: tc.id,
-            name: tc.function.name
+            content: res.result,
+            tool_call_id: res.tc.id,
+            name: res.tc.function.name
           });
         }
       }

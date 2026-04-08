@@ -6,6 +6,7 @@ const resolvePath = (p: string) => path.resolve(process.cwd(), p);
 
 export class ReadFileTool extends BaseTool {
   readonly name = 'read_file';
+  isConcurrencySafe = true;
   readonly description = 'Reads the contents of a file from the local file system. Use this to inspect file contents.';
   readonly inputSchema = {
     type: 'object',

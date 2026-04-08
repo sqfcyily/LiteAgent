@@ -21,6 +21,11 @@ export function getSystemTools(skills: SkillDefinition[] = []): ToolSchema[] {
   return registry.map(tool => tool.toSchema());
 }
 
+export function isToolConcurrencySafe(name: string): boolean {
+  const tool = registry.find(t => t.name === name);
+  return tool ? tool.isConcurrencySafe : false;
+}
+
 export async function runTool(name: string, args: any, context?: any): Promise<string> {
   const tool = registry.find(t => t.name === name);
   if (tool) {
