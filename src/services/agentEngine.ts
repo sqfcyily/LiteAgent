@@ -20,7 +20,7 @@ export async function* runEngine(
   tools: ToolSchema[],
   config: EngineConfig
 ): AsyncGenerator<EngineEvent, void, unknown> {
-  const maxLoops = config.maxLoops || 10;
+  const maxLoops = config.maxLoops || 25;
   let loops = 0;
   
   // Clone to avoid mutating the React state directly

@@ -22,7 +22,7 @@ export function getConfiguration(): EngineConfig {
     apiKey: process.env.API_KEY || '',
     model: process.env.MODEL_NAME || 'gpt-4o',
     language: process.env.LANGUAGE || 'en-US',
-    maxLoops: 10
+    maxLoops: 25
   };
 }
 

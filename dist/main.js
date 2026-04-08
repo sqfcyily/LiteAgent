@@ -17334,10 +17334,10 @@ Check the render method of \`` + ownerName + "`.";
       var setErrorHandler = null;
       var setSuspenseHandler = null;
       {
-        var copyWithDeleteImpl = function(obj, path2, index2) {
-          var key = path2[index2];
+        var copyWithDeleteImpl = function(obj, path3, index2) {
+          var key = path3[index2];
           var updated = isArray(obj) ? obj.slice() : assign({}, obj);
-          if (index2 + 1 === path2.length) {
+          if (index2 + 1 === path3.length) {
             if (isArray(updated)) {
               updated.splice(key, 1);
             } else {
@@ -17345,11 +17345,11 @@ Check the render method of \`` + ownerName + "`.";
             }
             return updated;
           }
-          updated[key] = copyWithDeleteImpl(obj[key], path2, index2 + 1);
+          updated[key] = copyWithDeleteImpl(obj[key], path3, index2 + 1);
           return updated;
         };
-        var copyWithDelete = function(obj, path2) {
-          return copyWithDeleteImpl(obj, path2, 0);
+        var copyWithDelete = function(obj, path3) {
+          return copyWithDeleteImpl(obj, path3, 0);
         };
         var copyWithRenameImpl = function(obj, oldPath, newPath, index2) {
           var oldKey = oldPath[index2];
@@ -17381,17 +17381,17 @@ Check the render method of \`` + ownerName + "`.";
           }
           return copyWithRenameImpl(obj, oldPath, newPath, 0);
         };
-        var copyWithSetImpl = function(obj, path2, index2, value) {
-          if (index2 >= path2.length) {
+        var copyWithSetImpl = function(obj, path3, index2, value) {
+          if (index2 >= path3.length) {
             return value;
           }
-          var key = path2[index2];
+          var key = path3[index2];
           var updated = isArray(obj) ? obj.slice() : assign({}, obj);
-          updated[key] = copyWithSetImpl(obj[key], path2, index2 + 1, value);
+          updated[key] = copyWithSetImpl(obj[key], path3, index2 + 1, value);
           return updated;
         };
-        var copyWithSet = function(obj, path2, value) {
-          return copyWithSetImpl(obj, path2, 0, value);
+        var copyWithSet = function(obj, path3, value) {
+          return copyWithSetImpl(obj, path3, 0, value);
         };
         var findHook = function(fiber, id) {
           var currentHook2 = fiber.memoizedState;
@@ -17401,10 +17401,10 @@ Check the render method of \`` + ownerName + "`.";
           }
           return currentHook2;
         };
-        overrideHookState = function(fiber, id, path2, value) {
+        overrideHookState = function(fiber, id, path3, value) {
           var hook = findHook(fiber, id);
           if (hook !== null) {
-            var newState = copyWithSet(hook.memoizedState, path2, value);
+            var newState = copyWithSet(hook.memoizedState, path3, value);
             hook.memoizedState = newState;
             hook.baseState = newState;
             fiber.memoizedProps = assign({}, fiber.memoizedProps);
@@ -17414,10 +17414,10 @@ Check the render method of \`` + ownerName + "`.";
             }
           }
         };
-        overrideHookStateDeletePath = function(fiber, id, path2) {
+        overrideHookStateDeletePath = function(fiber, id, path3) {
           var hook = findHook(fiber, id);
           if (hook !== null) {
-            var newState = copyWithDelete(hook.memoizedState, path2);
+            var newState = copyWithDelete(hook.memoizedState, path3);
             hook.memoizedState = newState;
             hook.baseState = newState;
             fiber.memoizedProps = assign({}, fiber.memoizedProps);
@@ -17440,8 +17440,8 @@ Check the render method of \`` + ownerName + "`.";
             }
           }
         };
-        overrideProps = function(fiber, path2, value) {
-          fiber.pendingProps = copyWithSet(fiber.memoizedProps, path2, value);
+        overrideProps = function(fiber, path3, value) {
+          fiber.pendingProps = copyWithSet(fiber.memoizedProps, path3, value);
           if (fiber.alternate) {
             fiber.alternate.pendingProps = fiber.pendingProps;
           }
@@ -17450,8 +17450,8 @@ Check the render method of \`` + ownerName + "`.";
             scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
           }
         };
-        overridePropsDeletePath = function(fiber, path2) {
-          fiber.pendingProps = copyWithDelete(fiber.memoizedProps, path2);
+        overridePropsDeletePath = function(fiber, path3) {
+          fiber.pendingProps = copyWithDelete(fiber.memoizedProps, path3);
           if (fiber.alternate) {
             fiber.alternate.pendingProps = fiber.pendingProps;
           }
@@ -24156,8 +24156,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
           return false;
         }
-        function utils_getInObject(object, path2) {
-          return path2.reduce(function(reduced, attr) {
+        function utils_getInObject(object, path3) {
+          return path3.reduce(function(reduced, attr) {
             if (reduced) {
               if (utils_hasOwnProperty.call(reduced, attr)) {
                 return reduced[attr];
@@ -24169,11 +24169,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             return null;
           }, object);
         }
-        function deletePathInObject(object, path2) {
-          var length = path2.length;
-          var last = path2[length - 1];
+        function deletePathInObject(object, path3) {
+          var length = path3.length;
+          var last = path3[length - 1];
           if (object != null) {
-            var parent = utils_getInObject(object, path2.slice(0, length - 1));
+            var parent = utils_getInObject(object, path3.slice(0, length - 1));
             if (parent) {
               if (src_isArray(parent)) {
                 parent.splice(last, 1);
@@ -24199,11 +24199,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }
           }
         }
-        function utils_setInObject(object, path2, value) {
-          var length = path2.length;
-          var last = path2[length - 1];
+        function utils_setInObject(object, path3, value) {
+          var length = path3.length;
+          var last = path3[length - 1];
           if (object != null) {
-            var parent = utils_getInObject(object, path2.slice(0, length - 1));
+            var parent = utils_getInObject(object, path3.slice(0, length - 1));
             if (parent) {
               parent[last] = value;
             }
@@ -24734,8 +24734,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           unserializable: Symbol("unserializable")
         };
         var LEVEL_THRESHOLD = 2;
-        function createDehydrated(type, inspectable, data, cleaned, path2) {
-          cleaned.push(path2);
+        function createDehydrated(type, inspectable, data, cleaned, path3) {
+          cleaned.push(path3);
           var dehydrated = {
             inspectable,
             type,
@@ -24753,13 +24753,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
           return dehydrated;
         }
-        function dehydrate(data, cleaned, unserializable, path2, isPathAllowed) {
+        function dehydrate(data, cleaned, unserializable, path3, isPathAllowed) {
           var level = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
           var type = getDataType(data);
           var isPathAllowedCheck;
           switch (type) {
             case "html_element":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24768,7 +24768,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "function":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24777,14 +24777,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "string":
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (isPathAllowedCheck) {
                 return data;
               } else {
                 return data.length <= 500 ? data : data.slice(0, 500) + "...";
               }
             case "bigint":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24793,7 +24793,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "symbol":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24802,9 +24802,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "react_element": {
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                cleaned.push(path2);
+                cleaned.push(path3);
                 return {
                   inspectable: true,
                   preview_short: formatDataForPreview(data, false),
@@ -24821,19 +24821,19 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 preview_long: formatDataForPreview(data, true),
                 name: getDisplayNameForReactElement(data) || "Unknown"
               };
-              unserializableValue.key = dehydrate(data.key, cleaned, unserializable, path2.concat(["key"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+              unserializableValue.key = dehydrate(data.key, cleaned, unserializable, path3.concat(["key"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
               if (data.$$typeof === REACT_LEGACY_ELEMENT_TYPE) {
-                unserializableValue.ref = dehydrate(data.ref, cleaned, unserializable, path2.concat(["ref"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                unserializableValue.ref = dehydrate(data.ref, cleaned, unserializable, path3.concat(["ref"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
               }
-              unserializableValue.props = dehydrate(data.props, cleaned, unserializable, path2.concat(["props"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
-              unserializable.push(path2);
+              unserializableValue.props = dehydrate(data.props, cleaned, unserializable, path3.concat(["props"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+              unserializable.push(path3);
               return unserializableValue;
             }
             case "react_lazy": {
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               var payload = data._payload;
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                cleaned.push(path2);
+                cleaned.push(path3);
                 var inspectable = payload !== null && hydration_typeof(payload) === "object" && (payload._status === 1 || payload._status === 2 || payload.status === "fulfilled" || payload.status === "rejected");
                 return {
                   inspectable,
@@ -24850,13 +24850,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 preview_long: formatDataForPreview(data, true),
                 name: "lazy()"
               };
-              _unserializableValue._payload = dehydrate(payload, cleaned, unserializable, path2.concat(["_payload"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
-              unserializable.push(path2);
+              _unserializableValue._payload = dehydrate(payload, cleaned, unserializable, path3.concat(["_payload"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+              unserializable.push(path3);
               return _unserializableValue;
             }
             case "array_buffer":
             case "data_view":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24866,21 +24866,21 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "array":
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                return createDehydrated(type, true, data, cleaned, path2);
+                return createDehydrated(type, true, data, cleaned, path3);
               }
               var arr = [];
               for (var i = 0;i < data.length; i++) {
-                arr[i] = dehydrateKey(data, i, cleaned, unserializable, path2.concat([i]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                arr[i] = dehydrateKey(data, i, cleaned, unserializable, path3.concat([i]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
               }
               return arr;
             case "html_all_collection":
             case "typed_array":
             case "iterator":
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                return createDehydrated(type, true, data, cleaned, path2);
+                return createDehydrated(type, true, data, cleaned, path3);
               } else {
                 var _unserializableValue2 = {
                   unserializable: true,
@@ -24892,13 +24892,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                   name: typeof data.constructor !== "function" || typeof data.constructor.name !== "string" || data.constructor.name === "Object" ? "" : data.constructor.name
                 };
                 Array.from(data).forEach(function(item, i2) {
-                  return _unserializableValue2[i2] = dehydrate(item, cleaned, unserializable, path2.concat([i2]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                  return _unserializableValue2[i2] = dehydrate(item, cleaned, unserializable, path3.concat([i2]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
                 });
-                unserializable.push(path2);
+                unserializable.push(path3);
                 return _unserializableValue2;
               }
             case "opaque_iterator":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24907,7 +24907,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "date":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24916,7 +24916,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "regexp":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 inspectable: false,
                 preview_short: formatDataForPreview(data, false),
@@ -24925,9 +24925,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type
               };
             case "thenable":
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                cleaned.push(path2);
+                cleaned.push(path3);
                 return {
                   inspectable: data.status === "fulfilled" || data.status === "rejected",
                   preview_short: formatDataForPreview(data, false),
@@ -24948,8 +24948,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     preview_long: formatDataForPreview(data, true),
                     name: "fulfilled Thenable"
                   };
-                  _unserializableValue3.value = dehydrate(data.value, cleaned, unserializable, path2.concat(["value"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
-                  unserializable.push(path2);
+                  _unserializableValue3.value = dehydrate(data.value, cleaned, unserializable, path3.concat(["value"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                  unserializable.push(path3);
                   return _unserializableValue3;
                 }
                 case "rejected": {
@@ -24960,12 +24960,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     preview_long: formatDataForPreview(data, true),
                     name: "rejected Thenable"
                   };
-                  _unserializableValue4.reason = dehydrate(data.reason, cleaned, unserializable, path2.concat(["reason"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
-                  unserializable.push(path2);
+                  _unserializableValue4.reason = dehydrate(data.reason, cleaned, unserializable, path3.concat(["reason"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                  unserializable.push(path3);
                   return _unserializableValue4;
                 }
                 default:
-                  cleaned.push(path2);
+                  cleaned.push(path3);
                   return {
                     inspectable: false,
                     preview_short: formatDataForPreview(data, false),
@@ -24975,21 +24975,21 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                   };
               }
             case "object":
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                return createDehydrated(type, true, data, cleaned, path2);
+                return createDehydrated(type, true, data, cleaned, path3);
               } else {
                 var object = {};
                 getAllEnumerableKeys(data).forEach(function(key) {
                   var name = key.toString();
-                  object[name] = dehydrateKey(data, key, cleaned, unserializable, path2.concat([name]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                  object[name] = dehydrateKey(data, key, cleaned, unserializable, path3.concat([name]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
                 });
                 return object;
               }
             case "class_instance": {
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                return createDehydrated(type, true, data, cleaned, path2);
+                return createDehydrated(type, true, data, cleaned, path3);
               }
               var value = {
                 unserializable: true,
@@ -25001,15 +25001,15 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               };
               getAllEnumerableKeys(data).forEach(function(key) {
                 var keyAsString = key.toString();
-                value[keyAsString] = dehydrate(data[key], cleaned, unserializable, path2.concat([keyAsString]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                value[keyAsString] = dehydrate(data[key], cleaned, unserializable, path3.concat([keyAsString]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
               });
-              unserializable.push(path2);
+              unserializable.push(path3);
               return value;
             }
             case "error": {
-              isPathAllowedCheck = isPathAllowed(path2);
+              isPathAllowedCheck = isPathAllowed(path3);
               if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-                return createDehydrated(type, true, data, cleaned, path2);
+                return createDehydrated(type, true, data, cleaned, path3);
               }
               var _value = {
                 unserializable: true,
@@ -25019,22 +25019,22 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 preview_long: formatDataForPreview(data, true),
                 name: data.name
               };
-              _value.message = dehydrate(data.message, cleaned, unserializable, path2.concat(["message"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
-              _value.stack = dehydrate(data.stack, cleaned, unserializable, path2.concat(["stack"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+              _value.message = dehydrate(data.message, cleaned, unserializable, path3.concat(["message"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+              _value.stack = dehydrate(data.stack, cleaned, unserializable, path3.concat(["stack"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
               if ("cause" in data) {
-                _value.cause = dehydrate(data.cause, cleaned, unserializable, path2.concat(["cause"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                _value.cause = dehydrate(data.cause, cleaned, unserializable, path3.concat(["cause"]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
               }
               getAllEnumerableKeys(data).forEach(function(key) {
                 var keyAsString = key.toString();
-                _value[keyAsString] = dehydrate(data[key], cleaned, unserializable, path2.concat([keyAsString]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
+                _value[keyAsString] = dehydrate(data[key], cleaned, unserializable, path3.concat([keyAsString]), isPathAllowed, isPathAllowedCheck ? 1 : level + 1);
               });
-              unserializable.push(path2);
+              unserializable.push(path3);
               return _value;
             }
             case "infinity":
             case "nan":
             case "undefined":
-              cleaned.push(path2);
+              cleaned.push(path3);
               return {
                 type
               };
@@ -25042,10 +25042,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               return data;
           }
         }
-        function dehydrateKey(parent, key, cleaned, unserializable, path2, isPathAllowed) {
+        function dehydrateKey(parent, key, cleaned, unserializable, path3, isPathAllowed) {
           var level = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
           try {
-            return dehydrate(parent[key], cleaned, unserializable, path2, isPathAllowed, level);
+            return dehydrate(parent[key], cleaned, unserializable, path3, isPathAllowed, level);
           } catch (error) {
             var preview = "";
             if (hydration_typeof(error) === "object" && error !== null && typeof error.stack === "string") {
@@ -25053,7 +25053,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             } else if (typeof error === "string") {
               preview = error;
             }
-            cleaned.push(path2);
+            cleaned.push(path3);
             return {
               inspectable: false,
               preview_short: "[Exception]",
@@ -25063,8 +25063,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             };
           }
         }
-        function fillInPath(object, data, path2, value) {
-          var target = getInObject(object, path2);
+        function fillInPath(object, data, path3, value) {
+          var target = getInObject(object, path3);
           if (target != null) {
             if (!target[meta.unserializable]) {
               delete target[meta.inspectable];
@@ -25079,9 +25079,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
           if (value !== null && data.unserializable.length > 0) {
             var unserializablePath = data.unserializable[0];
-            var isMatch = unserializablePath.length === path2.length;
-            for (var i = 0;i < path2.length; i++) {
-              if (path2[i] !== unserializablePath[i]) {
+            var isMatch = unserializablePath.length === path3.length;
+            for (var i = 0;i < path3.length; i++) {
+              if (path3[i] !== unserializablePath[i]) {
                 isMatch = false;
                 break;
               }
@@ -25090,13 +25090,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               upgradeUnserializable(value, value);
             }
           }
-          setInObject(object, path2, value);
+          setInObject(object, path3, value);
         }
         function hydrate(object, cleaned, unserializable) {
-          cleaned.forEach(function(path2) {
-            var length = path2.length;
-            var last = path2[length - 1];
-            var parent = getInObject(object, path2.slice(0, length - 1));
+          cleaned.forEach(function(path3) {
+            var length = path3.length;
+            var last = path3[length - 1];
+            var parent = getInObject(object, path3.slice(0, length - 1));
             if (!parent || !parent.hasOwnProperty(last)) {
               return;
             }
@@ -25122,10 +25122,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               parent[last] = replaced;
             }
           });
-          unserializable.forEach(function(path2) {
-            var length = path2.length;
-            var last = path2[length - 1];
-            var parent = getInObject(object, path2.slice(0, length - 1));
+          unserializable.forEach(function(path3) {
+            var length = path3.length;
+            var last = path3[length - 1];
+            var parent = getInObject(object, path3.slice(0, length - 1));
             if (!parent || !parent.hasOwnProperty(last)) {
               return;
             }
@@ -25246,11 +25246,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           return gte(version, FIRST_DEVTOOLS_BACKEND_LOCKSTEP_VER);
         }
         function cleanForBridge(data, isPathAllowed) {
-          var path2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+          var path3 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
           if (data !== null) {
             var cleanedPaths = [];
             var unserializablePaths = [];
-            var cleanedData = dehydrate(data, cleanedPaths, unserializablePaths, path2, isPathAllowed);
+            var cleanedData = dehydrate(data, cleanedPaths, unserializablePaths, path3, isPathAllowed);
             return {
               data: cleanedData,
               cleaned: cleanedPaths,
@@ -25260,18 +25260,18 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             return null;
           }
         }
-        function copyWithDelete(obj, path2) {
+        function copyWithDelete(obj, path3) {
           var index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-          var key = path2[index];
+          var key = path3[index];
           var updated = shared_isArray(obj) ? obj.slice() : utils_objectSpread({}, obj);
-          if (index + 1 === path2.length) {
+          if (index + 1 === path3.length) {
             if (shared_isArray(updated)) {
               updated.splice(key, 1);
             } else {
               delete updated[key];
             }
           } else {
-            updated[key] = copyWithDelete(obj[key], path2, index + 1);
+            updated[key] = copyWithDelete(obj[key], path3, index + 1);
           }
           return updated;
         }
@@ -25292,14 +25292,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
           return updated;
         }
-        function copyWithSet(obj, path2, value) {
+        function copyWithSet(obj, path3, value) {
           var index = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-          if (index >= path2.length) {
+          if (index >= path3.length) {
             return value;
           }
-          var key = path2[index];
+          var key = path3[index];
           var updated = shared_isArray(obj) ? obj.slice() : utils_objectSpread({}, obj);
-          updated[key] = copyWithSet(obj[key], path2, value, index + 1);
+          updated[key] = copyWithSet(obj[key], path3, value, index + 1);
           return updated;
         }
         function getEffectDurations(root) {
@@ -26627,12 +26627,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             bridge_defineProperty(_this, "overrideValueAtPath", function(_ref) {
-              var { id, path: path2, rendererID, type, value } = _ref;
+              var { id, path: path3, rendererID, type, value } = _ref;
               switch (type) {
                 case "context":
                   _this.send("overrideContext", {
                     id,
-                    path: path2,
+                    path: path3,
                     rendererID,
                     wasForwarded: true,
                     value
@@ -26641,7 +26641,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 case "hooks":
                   _this.send("overrideHookState", {
                     id,
-                    path: path2,
+                    path: path3,
                     rendererID,
                     wasForwarded: true,
                     value
@@ -26650,7 +26650,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 case "props":
                   _this.send("overrideProps", {
                     id,
-                    path: path2,
+                    path: path3,
                     rendererID,
                     wasForwarded: true,
                     value
@@ -26659,7 +26659,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 case "state":
                   _this.send("overrideState", {
                     id,
-                    path: path2,
+                    path: path3,
                     rendererID,
                     wasForwarded: true,
                     value
@@ -26993,12 +26993,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             agent_defineProperty(_this, "copyElementPath", function(_ref5) {
-              var { id, path: path2, rendererID } = _ref5;
+              var { id, path: path3, rendererID } = _ref5;
               var renderer = _this._rendererInterfaces[rendererID];
               if (renderer == null) {
                 console.warn('Invalid renderer id "'.concat(rendererID, '" for element "').concat(id, '"'));
               } else {
-                var value = renderer.getSerializedElementValueByPath(id, path2);
+                var value = renderer.getSerializedElementValueByPath(id, path3);
                 if (value != null) {
                   _this._bridge.send("saveToClipboard", value);
                 } else {
@@ -27007,12 +27007,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             agent_defineProperty(_this, "deletePath", function(_ref6) {
-              var { hookID, id, path: path2, rendererID, type } = _ref6;
+              var { hookID, id, path: path3, rendererID, type } = _ref6;
               var renderer = _this._rendererInterfaces[rendererID];
               if (renderer == null) {
                 console.warn('Invalid renderer id "'.concat(rendererID, '" for element "').concat(id, '"'));
               } else {
-                renderer.deletePath(type, id, hookID, path2);
+                renderer.deletePath(type, id, hookID, path3);
               }
             });
             agent_defineProperty(_this, "getBackendVersion", function() {
@@ -27049,12 +27049,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             agent_defineProperty(_this, "inspectElement", function(_ref9) {
-              var { forceFullData, id, path: path2, rendererID, requestID } = _ref9;
+              var { forceFullData, id, path: path3, rendererID, requestID } = _ref9;
               var renderer = _this._rendererInterfaces[rendererID];
               if (renderer == null) {
                 console.warn('Invalid renderer id "'.concat(rendererID, '" for element "').concat(id, '"'));
               } else {
-                _this._bridge.send("inspectedElement", renderer.inspectElement(requestID, id, path2, forceFullData));
+                _this._bridge.send("inspectedElement", renderer.inspectElement(requestID, id, path3, forceFullData));
                 if (_this._persistedSelectionMatch === null || _this._persistedSelectionMatch.id !== id) {
                   _this._persistedSelection = null;
                   _this._persistedSelectionMatch = null;
@@ -27088,15 +27088,15 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
               for (var rendererID in _this._rendererInterfaces) {
                 var renderer = _this._rendererInterfaces[rendererID];
-                var path2 = null;
+                var path3 = null;
                 if (suspendedByPathIndex !== null && rendererPath !== null) {
                   var suspendedByPathRendererIndex = suspendedByPathIndex - suspendedByOffset;
                   var rendererHasRequestedSuspendedByPath = renderer.getElementAttributeByPath(id, ["suspendedBy", suspendedByPathRendererIndex]) !== undefined;
                   if (rendererHasRequestedSuspendedByPath) {
-                    path2 = ["suspendedBy", suspendedByPathRendererIndex].concat(rendererPath);
+                    path3 = ["suspendedBy", suspendedByPathRendererIndex].concat(rendererPath);
                   }
                 }
-                var inspectedRootsPayload = renderer.inspectElement(requestID, id, path2, forceFullData);
+                var inspectedRootsPayload = renderer.inspectElement(requestID, id, path3, forceFullData);
                 switch (inspectedRootsPayload.type) {
                   case "hydrated-path":
                     inspectedRootsPayload.path[1] += suspendedByOffset;
@@ -27190,20 +27190,20 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             agent_defineProperty(_this, "overrideValueAtPath", function(_ref15) {
-              var { hookID, id, path: path2, rendererID, type, value } = _ref15;
+              var { hookID, id, path: path3, rendererID, type, value } = _ref15;
               var renderer = _this._rendererInterfaces[rendererID];
               if (renderer == null) {
                 console.warn('Invalid renderer id "'.concat(rendererID, '" for element "').concat(id, '"'));
               } else {
-                renderer.overrideValueAtPath(type, id, hookID, path2, value);
+                renderer.overrideValueAtPath(type, id, hookID, path3, value);
               }
             });
             agent_defineProperty(_this, "overrideContext", function(_ref16) {
-              var { id, path: path2, rendererID, wasForwarded, value } = _ref16;
+              var { id, path: path3, rendererID, wasForwarded, value } = _ref16;
               if (!wasForwarded) {
                 _this.overrideValueAtPath({
                   id,
-                  path: path2,
+                  path: path3,
                   rendererID,
                   type: "context",
                   value
@@ -27211,11 +27211,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             agent_defineProperty(_this, "overrideHookState", function(_ref17) {
-              var { id, hookID, path: path2, rendererID, wasForwarded, value } = _ref17;
+              var { id, hookID, path: path3, rendererID, wasForwarded, value } = _ref17;
               if (!wasForwarded) {
                 _this.overrideValueAtPath({
                   id,
-                  path: path2,
+                  path: path3,
                   rendererID,
                   type: "hooks",
                   value
@@ -27223,11 +27223,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             agent_defineProperty(_this, "overrideProps", function(_ref18) {
-              var { id, path: path2, rendererID, wasForwarded, value } = _ref18;
+              var { id, path: path3, rendererID, wasForwarded, value } = _ref18;
               if (!wasForwarded) {
                 _this.overrideValueAtPath({
                   id,
-                  path: path2,
+                  path: path3,
                   rendererID,
                   type: "props",
                   value
@@ -27235,11 +27235,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               }
             });
             agent_defineProperty(_this, "overrideState", function(_ref19) {
-              var { id, path: path2, rendererID, wasForwarded, value } = _ref19;
+              var { id, path: path3, rendererID, wasForwarded, value } = _ref19;
               if (!wasForwarded) {
                 _this.overrideValueAtPath({
                   id,
-                  path: path2,
+                  path: path3,
                   rendererID,
                   type: "state",
                   value
@@ -27306,12 +27306,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               _this._bridge.send("stopInspectingHost", selected);
             });
             agent_defineProperty(_this, "storeAsGlobal", function(_ref23) {
-              var { count, id, path: path2, rendererID } = _ref23;
+              var { count, id, path: path3, rendererID } = _ref23;
               var renderer = _this._rendererInterfaces[rendererID];
               if (renderer == null) {
                 console.warn('Invalid renderer id "'.concat(rendererID, '" for element "').concat(id, '"'));
               } else {
-                renderer.storeAsGlobal(id, path2, count);
+                renderer.storeAsGlobal(id, path3, count);
               }
             });
             agent_defineProperty(_this, "updateHookSettings", function(settings) {
@@ -27328,12 +27328,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 var rendererID = +rendererIDString;
                 var renderer = _this._rendererInterfaces[rendererID];
                 if (_this._lastSelectedRendererID === rendererID) {
-                  var path2 = renderer.getPathForElement(_this._lastSelectedElementID);
-                  if (path2 !== null) {
-                    renderer.setTrackedPath(path2);
+                  var path3 = renderer.getPathForElement(_this._lastSelectedElementID);
+                  if (path3 !== null) {
+                    renderer.setTrackedPath(path3);
                     _this._persistedSelection = {
                       rendererID,
-                      path: path2
+                      path: path3
                     };
                   }
                 }
@@ -27408,11 +27408,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               var rendererID = _this._lastSelectedRendererID;
               var id = _this._lastSelectedElementID;
               var renderer = _this._rendererInterfaces[rendererID];
-              var path2 = renderer != null ? renderer.getPathForElement(id) : null;
-              if (path2 !== null) {
+              var path3 = renderer != null ? renderer.getPathForElement(id) : null;
+              if (path3 !== null) {
                 storage_sessionStorageSetItem(SESSION_STORAGE_LAST_SELECTION_KEY, JSON.stringify({
                   rendererID,
-                  path: path2
+                  path: path3
                 }));
               } else {
                 storage_sessionStorageRemoveItem(SESSION_STORAGE_LAST_SELECTION_KEY);
@@ -28135,7 +28135,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             hasElementWithId: function hasElementWithId() {
               return false;
             },
-            inspectElement: function inspectElement(requestID, id, path2) {
+            inspectElement: function inspectElement(requestID, id, path3) {
               return {
                 id,
                 responseID: requestID,
@@ -33405,9 +33405,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             }
             return null;
           }
-          function getElementAttributeByPath(id, path2) {
+          function getElementAttributeByPath(id, path3) {
             if (isMostRecentlyInspectedElement(id)) {
-              return utils_getInObject(mostRecentlyInspectedElement, path2);
+              return utils_getInObject(mostRecentlyInspectedElement, path3);
             }
             return;
           }
@@ -34110,9 +34110,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           function isMostRecentlyInspectedElementCurrent(id) {
             return isMostRecentlyInspectedElement(id) && !hasElementUpdatedSinceLastInspected;
           }
-          function mergeInspectedPaths(path2) {
+          function mergeInspectedPaths(path3) {
             var current = currentlyInspectedPaths;
-            path2.forEach(function(key) {
+            path3.forEach(function(key) {
               if (!current[key]) {
                 current[key] = {};
               }
@@ -34120,21 +34120,21 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             });
           }
           function createIsPathAllowed(key, secondaryCategory) {
-            return function isPathAllowed(path2) {
+            return function isPathAllowed(path3) {
               switch (secondaryCategory) {
                 case "hooks":
-                  if (path2.length === 1) {
+                  if (path3.length === 1) {
                     return true;
                   }
-                  if (path2[path2.length - 2] === "hookSource" && path2[path2.length - 1] === "fileName") {
+                  if (path3[path3.length - 2] === "hookSource" && path3[path3.length - 1] === "fileName") {
                     return true;
                   }
-                  if (path2[path2.length - 1] === "subHooks" || path2[path2.length - 2] === "subHooks") {
+                  if (path3[path3.length - 1] === "subHooks" || path3[path3.length - 2] === "subHooks") {
                     return true;
                   }
                   break;
                 case "suspendedBy":
-                  if (path2.length < 5) {
+                  if (path3.length < 5) {
                     return true;
                   }
                   break;
@@ -34145,8 +34145,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               if (!current) {
                 return false;
               }
-              for (var i = 0;i < path2.length; i++) {
-                current = current[path2[i]];
+              for (var i = 0;i < path3.length; i++) {
+                current = current[path3[i]];
                 if (!current) {
                   return false;
                 }
@@ -34200,38 +34200,38 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 break;
             }
           }
-          function storeAsGlobal(id, path2, count) {
+          function storeAsGlobal(id, path3, count) {
             if (isMostRecentlyInspectedElement(id)) {
-              var value = utils_getInObject(mostRecentlyInspectedElement, path2);
+              var value = utils_getInObject(mostRecentlyInspectedElement, path3);
               var key = "$reactTemp".concat(count);
               window[key] = value;
               console.log(key);
               console.log(value);
             }
           }
-          function getSerializedElementValueByPath(id, path2) {
+          function getSerializedElementValueByPath(id, path3) {
             if (isMostRecentlyInspectedElement(id)) {
-              var valueToCopy = utils_getInObject(mostRecentlyInspectedElement, path2);
+              var valueToCopy = utils_getInObject(mostRecentlyInspectedElement, path3);
               return serializeToString(valueToCopy);
             }
           }
-          function inspectElement(requestID, id, path2, forceFullData) {
-            if (path2 !== null) {
-              mergeInspectedPaths(path2);
+          function inspectElement(requestID, id, path3, forceFullData) {
+            if (path3 !== null) {
+              mergeInspectedPaths(path3);
             }
             if (isMostRecentlyInspectedElement(id) && !forceFullData) {
               if (!hasElementUpdatedSinceLastInspected) {
-                if (path2 !== null) {
+                if (path3 !== null) {
                   var secondaryCategory = null;
-                  if (path2[0] === "hooks" || path2[0] === "suspendedBy") {
-                    secondaryCategory = path2[0];
+                  if (path3[0] === "hooks" || path3[0] === "suspendedBy") {
+                    secondaryCategory = path3[0];
                   }
                   return {
                     id,
                     responseID: requestID,
                     type: "hydrated-path",
-                    path: path2,
-                    value: cleanForBridge(utils_getInObject(mostRecentlyInspectedElement, path2), createIsPathAllowed(null, secondaryCategory), path2)
+                    path: path3,
+                    value: cleanForBridge(utils_getInObject(mostRecentlyInspectedElement, path3), createIsPathAllowed(null, secondaryCategory), path3)
                   };
                 } else {
                   return {
@@ -34427,7 +34427,7 @@ The error thrown in the component is:
               console.groupEnd();
             }
           }
-          function deletePath(type, id, hookID, path2) {
+          function deletePath(type, id, hookID, path3) {
             var devtoolsInstance = idToDevToolsInstanceMap.get(id);
             if (devtoolsInstance === undefined) {
               console.warn('Could not find DevToolsInstance with id "'.concat(id, '"'));
@@ -34441,11 +34441,11 @@ The error thrown in the component is:
               var instance = fiber.stateNode;
               switch (type) {
                 case "context":
-                  path2 = path2.slice(1);
+                  path3 = path3.slice(1);
                   switch (fiber.tag) {
                     case ClassComponent:
-                      if (path2.length === 0) {} else {
-                        deletePathInObject(instance.context, path2);
+                      if (path3.length === 0) {} else {
+                        deletePathInObject(instance.context, path3);
                       }
                       instance.forceUpdate();
                       break;
@@ -34455,21 +34455,21 @@ The error thrown in the component is:
                   break;
                 case "hooks":
                   if (typeof overrideHookStateDeletePath === "function") {
-                    overrideHookStateDeletePath(fiber, hookID, path2);
+                    overrideHookStateDeletePath(fiber, hookID, path3);
                   }
                   break;
                 case "props":
                   if (instance === null) {
                     if (typeof overridePropsDeletePath === "function") {
-                      overridePropsDeletePath(fiber, path2);
+                      overridePropsDeletePath(fiber, path3);
                     }
                   } else {
-                    fiber.pendingProps = copyWithDelete(instance.props, path2);
+                    fiber.pendingProps = copyWithDelete(instance.props, path3);
                     instance.forceUpdate();
                   }
                   break;
                 case "state":
-                  deletePathInObject(instance.state, path2);
+                  deletePathInObject(instance.state, path3);
                   instance.forceUpdate();
                   break;
               }
@@ -34524,7 +34524,7 @@ The error thrown in the component is:
               }
             }
           }
-          function overrideValueAtPath(type, id, hookID, path2, value) {
+          function overrideValueAtPath(type, id, hookID, path3, value) {
             var devtoolsInstance = idToDevToolsInstanceMap.get(id);
             if (devtoolsInstance === undefined) {
               console.warn('Could not find DevToolsInstance with id "'.concat(id, '"'));
@@ -34538,13 +34538,13 @@ The error thrown in the component is:
               var instance = fiber.stateNode;
               switch (type) {
                 case "context":
-                  path2 = path2.slice(1);
+                  path3 = path3.slice(1);
                   switch (fiber.tag) {
                     case ClassComponent:
-                      if (path2.length === 0) {
+                      if (path3.length === 0) {
                         instance.context = value;
                       } else {
-                        utils_setInObject(instance.context, path2, value);
+                        utils_setInObject(instance.context, path3, value);
                       }
                       instance.forceUpdate();
                       break;
@@ -34554,18 +34554,18 @@ The error thrown in the component is:
                   break;
                 case "hooks":
                   if (typeof overrideHookState === "function") {
-                    overrideHookState(fiber, hookID, path2, value);
+                    overrideHookState(fiber, hookID, path3, value);
                   }
                   break;
                 case "props":
                   switch (fiber.tag) {
                     case ClassComponent:
-                      fiber.pendingProps = copyWithSet(instance.props, path2, value);
+                      fiber.pendingProps = copyWithSet(instance.props, path3, value);
                       instance.forceUpdate();
                       break;
                     default:
                       if (typeof overrideProps === "function") {
-                        overrideProps(fiber, path2, value);
+                        overrideProps(fiber, path3, value);
                       }
                       break;
                   }
@@ -34573,7 +34573,7 @@ The error thrown in the component is:
                 case "state":
                   switch (fiber.tag) {
                     case ClassComponent:
-                      utils_setInObject(instance.state, path2, value);
+                      utils_setInObject(instance.state, path3, value);
                       instance.forceUpdate();
                       break;
                   }
@@ -34859,14 +34859,14 @@ The error thrown in the component is:
           var trackedPathMatchInstance = null;
           var trackedPathMatchDepth = -1;
           var mightBeOnTrackedPath = false;
-          function setTrackedPath(path2) {
-            if (path2 === null) {
+          function setTrackedPath(path3) {
+            if (path3 === null) {
               trackedPathMatchFiber = null;
               trackedPathMatchInstance = null;
               trackedPathMatchDepth = -1;
               mightBeOnTrackedPath = false;
             }
-            trackedPath = path2;
+            trackedPath = path3;
           }
           function updateTrackedPathStateBeforeMount(fiber, fiberInstance) {
             if (trackedPath === null || !mightBeOnTrackedPath) {
@@ -35630,9 +35630,9 @@ The error thrown in the component is:
           }
           var currentlyInspectedElementID = null;
           var currentlyInspectedPaths = {};
-          function mergeInspectedPaths(path2) {
+          function mergeInspectedPaths(path3) {
             var current = currentlyInspectedPaths;
-            path2.forEach(function(key) {
+            path3.forEach(function(key) {
               if (!current[key]) {
                 current[key] = {};
               }
@@ -35640,13 +35640,13 @@ The error thrown in the component is:
             });
           }
           function createIsPathAllowed(key) {
-            return function isPathAllowed(path2) {
+            return function isPathAllowed(path3) {
               var current = currentlyInspectedPaths[key];
               if (!current) {
                 return false;
               }
-              for (var i = 0;i < path2.length; i++) {
-                current = current[path2[i]];
+              for (var i = 0;i < path3.length; i++) {
+                current = current[path3[i]];
                 if (!current) {
                   return false;
                 }
@@ -35696,24 +35696,24 @@ The error thrown in the component is:
                 break;
             }
           }
-          function storeAsGlobal(id, path2, count) {
+          function storeAsGlobal(id, path3, count) {
             var inspectedElement = inspectElementRaw(id);
             if (inspectedElement !== null) {
-              var value = utils_getInObject(inspectedElement, path2);
+              var value = utils_getInObject(inspectedElement, path3);
               var key = "$reactTemp".concat(count);
               window[key] = value;
               console.log(key);
               console.log(value);
             }
           }
-          function getSerializedElementValueByPath(id, path2) {
+          function getSerializedElementValueByPath(id, path3) {
             var inspectedElement = inspectElementRaw(id);
             if (inspectedElement !== null) {
-              var valueToCopy = utils_getInObject(inspectedElement, path2);
+              var valueToCopy = utils_getInObject(inspectedElement, path3);
               return serializeToString(valueToCopy);
             }
           }
-          function inspectElement(requestID, id, path2, forceFullData) {
+          function inspectElement(requestID, id, path3, forceFullData) {
             if (forceFullData || currentlyInspectedElementID !== id) {
               currentlyInspectedElementID = id;
               currentlyInspectedPaths = {};
@@ -35726,8 +35726,8 @@ The error thrown in the component is:
                 type: "not-found"
               };
             }
-            if (path2 !== null) {
-              mergeInspectedPaths(path2);
+            if (path3 !== null) {
+              mergeInspectedPaths(path3);
             }
             updateSelectedElement(id);
             inspectedElement.context = cleanForBridge(inspectedElement.context, createIsPathAllowed("context"));
@@ -35930,10 +35930,10 @@ The error thrown in the component is:
               console.groupEnd();
             }
           }
-          function getElementAttributeByPath(id, path2) {
+          function getElementAttributeByPath(id, path3) {
             var inspectedElement = inspectElementRaw(id);
             if (inspectedElement !== null) {
-              return utils_getInObject(inspectedElement, path2);
+              return utils_getInObject(inspectedElement, path3);
             }
             return;
           }
@@ -35950,14 +35950,14 @@ The error thrown in the component is:
             }
             return element.type;
           }
-          function deletePath(type, id, hookID, path2) {
+          function deletePath(type, id, hookID, path3) {
             var internalInstance = idToInternalInstanceMap.get(id);
             if (internalInstance != null) {
               var publicInstance = internalInstance._instance;
               if (publicInstance != null) {
                 switch (type) {
                   case "context":
-                    deletePathInObject(publicInstance.context, path2);
+                    deletePathInObject(publicInstance.context, path3);
                     forceUpdate(publicInstance);
                     break;
                   case "hooks":
@@ -35965,12 +35965,12 @@ The error thrown in the component is:
                   case "props":
                     var element = internalInstance._currentElement;
                     internalInstance._currentElement = legacy_renderer_objectSpread(legacy_renderer_objectSpread({}, element), {}, {
-                      props: copyWithDelete(element.props, path2)
+                      props: copyWithDelete(element.props, path3)
                     });
                     forceUpdate(publicInstance);
                     break;
                   case "state":
-                    deletePathInObject(publicInstance.state, path2);
+                    deletePathInObject(publicInstance.state, path3);
                     forceUpdate(publicInstance);
                     break;
                 }
@@ -36004,14 +36004,14 @@ The error thrown in the component is:
               }
             }
           }
-          function overrideValueAtPath(type, id, hookID, path2, value) {
+          function overrideValueAtPath(type, id, hookID, path3, value) {
             var internalInstance = idToInternalInstanceMap.get(id);
             if (internalInstance != null) {
               var publicInstance = internalInstance._instance;
               if (publicInstance != null) {
                 switch (type) {
                   case "context":
-                    utils_setInObject(publicInstance.context, path2, value);
+                    utils_setInObject(publicInstance.context, path3, value);
                     forceUpdate(publicInstance);
                     break;
                   case "hooks":
@@ -36019,12 +36019,12 @@ The error thrown in the component is:
                   case "props":
                     var element = internalInstance._currentElement;
                     internalInstance._currentElement = legacy_renderer_objectSpread(legacy_renderer_objectSpread({}, element), {}, {
-                      props: copyWithSet(element.props, path2, value)
+                      props: copyWithSet(element.props, path3, value)
                     });
                     forceUpdate(publicInstance);
                     break;
                   case "state":
-                    utils_setInObject(publicInstance.state, path2, value);
+                    utils_setInObject(publicInstance.state, path3, value);
                     forceUpdate(publicInstance);
                     break;
                 }
@@ -36065,7 +36065,7 @@ The error thrown in the component is:
             return [];
           }
           function setTraceUpdatesEnabled(enabled) {}
-          function setTrackedPath(path2) {}
+          function setTrackedPath(path3) {}
           function getOwnersList(id) {
             return null;
           }
@@ -38612,17 +38612,23 @@ var require_jsx_dev_runtime = __commonJS((exports, module) => {
 // src/config/index.ts
 var dotenv = __toESM(require_main(), 1);
 import * as fs from "fs";
-var CONFIG_FILE = ".agentrc";
+import * as path from "path";
+import * as os from "os";
+var GLOBAL_CONFIG_FILE = path.join(os.homedir(), ".liteagentrc");
+var LOCAL_CONFIG_FILE = ".agentrc";
 function getConfiguration() {
-  if (fs.existsSync(CONFIG_FILE)) {
-    dotenv.config({ path: CONFIG_FILE });
+  if (fs.existsSync(GLOBAL_CONFIG_FILE)) {
+    dotenv.config({ path: GLOBAL_CONFIG_FILE });
+  }
+  if (fs.existsSync(LOCAL_CONFIG_FILE)) {
+    dotenv.config({ path: LOCAL_CONFIG_FILE, override: true });
   }
   return {
     baseUrl: process.env.BASE_URL || "https://api.openai.com/v1",
     apiKey: process.env.API_KEY || "",
     model: process.env.MODEL_NAME || "gpt-4o",
     language: process.env.LANGUAGE || "en-US",
-    maxLoops: 10
+    maxLoops: 25
   };
 }
 function saveConfiguration(baseUrl, modelName, apiKey) {
@@ -38631,12 +38637,12 @@ MODEL_NAME=${modelName || "gpt-4o"}
 API_KEY=${apiKey}
 LANGUAGE=en-US
 `;
-  fs.writeFileSync(CONFIG_FILE, configContent, "utf-8");
+  fs.writeFileSync(GLOBAL_CONFIG_FILE, configContent, "utf-8");
 }
 
 // src/tools/system/fsTools.ts
 import { promises as fs2 } from "fs";
-import * as path from "path";
+import * as path2 from "path";
 
 // src/tools/base.ts
 class BaseTool {
@@ -38653,7 +38659,7 @@ class BaseTool {
 }
 
 // src/tools/system/fsTools.ts
-var resolvePath = (p) => path.resolve(process.cwd(), p);
+var resolvePath = (p) => path2.resolve(process.cwd(), p);
 
 class ReadFileTool extends BaseTool {
   name = "read_file";
@@ -38690,7 +38696,7 @@ class WriteFileTool extends BaseTool {
   async call(input) {
     try {
       const targetPath = resolvePath(input.file_path);
-      await fs2.mkdir(path.dirname(targetPath), { recursive: true });
+      await fs2.mkdir(path2.dirname(targetPath), { recursive: true });
       await fs2.writeFile(targetPath, input.content, "utf-8");
       return `Successfully wrote to file: ${targetPath}`;
     } catch (err) {
@@ -38742,7 +38748,7 @@ class RenameFileTool extends BaseTool {
     try {
       const oldTargetPath = resolvePath(input.old_path);
       const newTargetPath = resolvePath(input.new_path);
-      await fs2.mkdir(path.dirname(newTargetPath), { recursive: true });
+      await fs2.mkdir(path2.dirname(newTargetPath), { recursive: true });
       await fs2.rename(oldTargetPath, newTargetPath);
       return `Successfully renamed ${oldTargetPath} to ${newTargetPath}`;
     } catch (err) {
@@ -39037,7 +39043,7 @@ __export(exports_base, {
   ConEmu: () => ConEmu
 });
 import process2 from "node:process";
-import os from "node:os";
+import os2 from "node:os";
 
 // node_modules/environment/index.js
 var isBrowser = globalThis.window?.document !== undefined;
@@ -39136,7 +39142,7 @@ var isOldWindows = () => {
   if (isBrowser || !isWindows2) {
     return false;
   }
-  const parts = os.release().split(".");
+  const parts = os2.release().split(".");
   const major = Number(parts[0]);
   const build = Number(parts[2] ?? 0);
   if (major < 10) {
@@ -42396,7 +42402,7 @@ var ansi_styles_default2 = ansiStyles2;
 
 // node_modules/chalk/source/vendor/supports-color/index.js
 import process4 from "node:process";
-import os2 from "node:os";
+import os3 from "node:os";
 import tty from "node:tty";
 function hasFlag(flag, argv = globalThis.Deno ? globalThis.Deno.args : process4.argv) {
   const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
@@ -42461,7 +42467,7 @@ function _supportsColor(haveStream, { streamIsTTY, sniffFlags = true } = {}) {
     return min;
   }
   if (process4.platform === "win32") {
-    const osRelease = os2.release().split(".");
+    const osRelease = os3.release().split(".");
     if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
       return Number(osRelease[2]) >= 14931 ? 3 : 2;
     }
@@ -43605,8 +43611,8 @@ function Text({ color, backgroundColor, dimColor = false, bold = false, italic =
 }
 
 // node_modules/ink/build/components/ErrorOverview.js
-var cleanupPath = (path2) => {
-  return path2?.replace(`file://${cwd()}/`, "");
+var cleanupPath = (path3) => {
+  return path3?.replace(`file://${cwd()}/`, "");
 };
 var stackUtils = new import_stack_utils.default({
   cwd: cwd(),
@@ -44410,7 +44416,7 @@ var import_react20 = __toESM(require_react(), 1);
 var import_react21 = __toESM(require_react(), 1);
 // src/buddy/BuddyUI.tsx
 import * as fs4 from "fs";
-import * as path2 from "path";
+import * as path3 from "path";
 
 // node_modules/ink-text-input/build/index.js
 var import_react22 = __toESM(require_react(), 1);
@@ -46813,7 +46819,7 @@ function matchRule(signature, rule) {
 
 // src/services/agentEngine.ts
 async function* runEngine(initialMessages, tools, config2) {
-  const maxLoops = config2.maxLoops || 10;
+  const maxLoops = config2.maxLoops || 25;
   let loops = 0;
   const messages = [...initialMessages];
   while (loops < maxLoops) {
@@ -46985,12 +46991,11 @@ ${skillInstructions}`;
   const [appState, setAppState] = import_react23.useState("idle");
   const [currentStream, setCurrentStream] = import_react23.useState("");
   const currentStreamRef = import_react23.useRef("");
-  const [finishedResponse, setFinishedResponse] = import_react23.useState(null);
   const [frameIdx, setFrameIdx] = import_react23.useState(0);
   const [debugLogs, setDebugLogs] = import_react23.useState([]);
   import_react23.useEffect(() => {
     if (config2.isDev) {
-      const logPath = path2.join(process.cwd(), "dev.log");
+      const logPath = path3.join(process.cwd(), "lite-agent-dev.log");
       fs4.writeFileSync(logPath, `=== LiteAgent Dev Session Started at ${new Date().toISOString()} ===
 `, "utf-8");
     }
@@ -47029,14 +47034,11 @@ ${skillInstructions}`;
       return;
     }
     if (trimmed.toLowerCase() === "/dev") {
-      setHistory((prev) => [...prev, { role: "assistant", content: "ℹ️ Dev mode logs are now written to `dev.log` in your current directory. Use `tail -f dev.log` in another terminal to monitor." }]);
+      setHistory((prev) => [...prev, { role: "assistant", content: "ℹ️ Dev mode logs are now written to `lite-agent-dev.log` in your current directory. Use `tail -f lite-agent-dev.log` in another terminal to monitor." }]);
       setInput("");
       return;
     }
     let currentHist = [...history];
-    if (finishedResponse) {
-      currentHist.push({ role: "assistant", content: finishedResponse });
-    }
     const userMsg = { role: "user", content: text };
     currentHist.push(userMsg);
     setHistory(currentHist);
@@ -47045,7 +47047,6 @@ ${skillInstructions}`;
     setInput("");
     setAppState("thinking");
     setCurrentStream("");
-    setFinishedResponse(null);
     setDebugLogs([]);
     try {
       const stream = runEngine(newMessages, tools, config2);
@@ -47053,7 +47054,7 @@ ${skillInstructions}`;
         switch (event.type) {
           case "debug":
             if (config2.isDev) {
-              const logPath = path2.join(process.cwd(), "dev.log");
+              const logPath = path3.join(process.cwd(), "lite-agent-dev.log");
               const logEntry = `[${new Date().toISOString()}] ${event.event === "request" ? "↑ API Request" : "↓ API Response"} (Loop ${event.data.loop})
 ${JSON.stringify(event.data, null, 2)}
 
@@ -47086,7 +47087,7 @@ ${JSON.stringify(event.data, null, 2)}
             setMessages(event.finalMessages);
             const finalContent = event.content?.trim() || currentStreamRef.current?.trim();
             if (finalContent) {
-              setFinishedResponse(finalContent);
+              setHistory((prev) => [...prev, { role: "assistant", content: finalContent }]);
             }
             setCurrentStream("");
             currentStreamRef.current = "";
@@ -47095,15 +47096,8 @@ ${JSON.stringify(event.data, null, 2)}
           case "error":
             const errorMsg = { role: "assistant", content: `❌ Error: ${event.error.message}` };
             setMessages([...newMessages, errorMsg]);
-            setHistory((prev) => {
-              const newHist = [...prev];
-              if (finishedResponse)
-                newHist.push({ role: "assistant", content: finishedResponse });
-              newHist.push(errorMsg);
-              return newHist;
-            });
+            setHistory((prev) => [...prev, errorMsg]);
             setCurrentStream("");
-            setFinishedResponse(null);
             setAppState("error");
             setTimeout(() => setAppState("idle"), 3000);
             break;
@@ -47112,15 +47106,8 @@ ${JSON.stringify(event.data, null, 2)}
     } catch (e) {
       const fatalErrorMsg = { role: "assistant", content: `❌ Fatal Error: ${e.message}` };
       setMessages([...newMessages, fatalErrorMsg]);
-      setHistory((prev) => {
-        const newHist = [...prev];
-        if (finishedResponse)
-          newHist.push({ role: "assistant", content: finishedResponse });
-        newHist.push(fatalErrorMsg);
-        return newHist;
-      });
+      setHistory((prev) => [...prev, fatalErrorMsg]);
       setCurrentStream("");
-      setFinishedResponse(null);
       setAppState("error");
       setTimeout(() => setAppState("idle"), 3000);
     }
@@ -47248,27 +47235,6 @@ ${JSON.stringify(event.data, null, 2)}
               }, undefined, false, undefined, this) : null
             ]
           }, undefined, true, undefined, this),
-          appState === "idle" && finishedResponse && /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Box_default, {
-            flexDirection: "column",
-            marginTop: 1,
-            marginBottom: 0,
-            children: [
-              /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Box_default, {
-                marginBottom: 0,
-                children: /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Text, {
-                  bold: true,
-                  color: "cyan",
-                  children: "■ LiteAgent: "
-                }, undefined, false, undefined, this)
-              }, undefined, false, undefined, this),
-              /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Box_default, {
-                paddingLeft: 2,
-                children: /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Markdown, {
-                  children: finishedResponse
-                }, undefined, false, undefined, this)
-              }, undefined, false, undefined, this)
-            ]
-          }, undefined, true, undefined, this),
           (appState === "idle" || appState === "success" || appState === "error") && /* @__PURE__ */ jsx_dev_runtime2.jsxDEV(Box_default, {
             flexDirection: "column",
             borderTop: true,
@@ -47324,7 +47290,7 @@ ${JSON.stringify(event.data, null, 2)}
                       value: input,
                       onChange: setInput,
                       onSubmit: handleSubmit,
-                      placeholder: config2.isDev ? "Type a message... (Logs are in dev.log, type /dev for info)" : "Type a message..."
+                      placeholder: config2.isDev ? "Type a message... (Logs are in lite-agent-dev.log)" : "Type a message..."
                     }, undefined, false, undefined, this)
                   }, undefined, false, undefined, this)
                 ]
@@ -47387,4 +47353,4 @@ main().catch((err) => {
   process.exit(1);
 });
 
-//# debugId=68B36C374AA744CD64756E2164756E21
+//# debugId=56DB14AE5F65109564756E2164756E21
