@@ -129,6 +129,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
 
     try {
       const stream = runEngine(newMessages, tools, config);
+
       for await (const event of stream) {
         switch (event.type) {
           case 'debug':

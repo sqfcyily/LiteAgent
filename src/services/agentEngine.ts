@@ -148,7 +148,7 @@ export async function* runEngine(
             // yield { type: 'thinking', content: `[Permission Pipeline] Requesting user confirmation for ${tc.function.name}... (Auto-resolved for demo)` };
           }
 
-          const result = await runTool(tc.function.name, argsObj);
+          const result = await runTool(tc.function.name, argsObj, { config, tools });
           yield { type: 'tool_end', toolName: tc.function.name, result };
           messages.push({
             role: 'tool',
