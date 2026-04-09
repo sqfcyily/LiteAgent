@@ -5,7 +5,13 @@ import * as readline from 'readline';
 
 async function askQuestion(query: string): Promise<string> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise(resolve => rl.question(query, ans => { rl.close(); resolve(ans); }));
+  return new Promise(resolve => rl.question(query, ans => { 
+    rl.close(); 
+    // Resume stdin immediately to prevent the Node.js event loop from exiting 
+    // during subsequent async operations before Ink mounts.
+    process.stdin.resume();
+    resolve(ans); 
+  }));
 }
 
 async function main() {
