@@ -378,23 +378,32 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
             setMessages(event.finalMessages);
             const finalContent = event.content?.trim() || currentStreamRef.current?.trim();
             if (finalContent && !finalContent.startsWith('Reasoning loop ')) {
-              // Check if the final content is identical to the last pushed thought in history
+              let wasThought = false;
+              
               setHistory(prev => {
                 const newHist = [...prev];
-                const lastItem = newHist[newHist.length - 1];
                 const formattedThought = `_Thought: ${finalContent}_`;
                 
-                // If the last thing pushed to history was exactly this content (wrapped as a thought),
-                // we drop the thought version and replace it with the final clean version.
-                if (lastItem && lastItem.role === 'assistant' && lastItem.content === formattedThought) {
-                  newHist.pop(); // Remove the thought version
+                // Find the last assistant message that exactly matches this thought
+                for (let i = newHist.length - 1; i >= 0; i--) {
+                  const item = newHist[i];
+                  if (item.role === 'assistant' && item.content === formattedThought) {
+                    newHist.splice(i, 1); // Remove the thought version
+                    wasThought = true;
+                    break; // Only remove the most recent exact match
+                  }
                 }
                 return newHist;
               });
               
-              // Usually the final content is the actual answer, so we don't wrap it in 'Thought:'
               if (finalContent.trim() !== '') {
-                setFinishedResponse(finalContent);
+                // If it was a thought, we MUST ensure the finishedResponse is wrapped in _Thought: ..._ 
+                // so that when it is pushed to history on the NEXT turn, it retains its italicized formatting.
+                if (wasThought) {
+                   setFinishedResponse(`_Thought: ${finalContent}_`);
+                } else {
+                   setFinishedResponse(finalContent);
+                }
               }
             }
             // Explicitly clear finishedResponse if the LLM returned absolutely nothing at the end of the loop
