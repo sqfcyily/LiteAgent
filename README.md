@@ -1,3 +1,5 @@
+[中文](README.md) | [English](README.en.md)
+
 # LiteAgent
 
 LiteAgent 是一个轻量级的 AI Agent Harness（智能体运行时支架）CLI 框架。
