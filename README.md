@@ -2,6 +2,10 @@
 
 # LiteAgent
 
+[![NPM Version](https://img.shields.io/npm/v/@sqfcy/liteagent)](https://www.npmjs.com/package/@sqfcy/liteagent)
+[![Website](https://img.shields.io/badge/Website-LiteAgent-06b6d4?style=flat&logo=github)](https://sqfcyily.github.io/LiteAgent/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 LiteAgent 是一个轻量级的 AI Agent Harness（智能体运行时支架）CLI 框架。
 
 本项目深度参考了 Anthropic 官方发布的 **Claude Code** 的架构设计，并采用了与其相同的现代前端与 Node.js 技术栈（TypeScript + React Ink + Bun）。本项目的核心目标是为开发者提供一个极简、易读的 Agent 学习模型，剥离复杂的商业化冗余代码，帮助初学者快速掌握大语言模型（LLM）对话主循环、工具调用（Tool Use/Function Calling）以及终端 UI 渲染的核心逻辑。

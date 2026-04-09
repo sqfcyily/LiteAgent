@@ -2,6 +2,10 @@
 
 # LiteAgent
 
+[![NPM Version](https://img.shields.io/npm/v/@sqfcy/liteagent)](https://www.npmjs.com/package/@sqfcy/liteagent)
+[![Website](https://img.shields.io/badge/Website-LiteAgent-06b6d4?style=flat&logo=github)](https://sqfcyily.github.io/LiteAgent/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 LiteAgent is a lightweight AI Agent Harness CLI framework.
 
 This project is heavily inspired by Anthropic's official **Claude Code** Agent Harness architecture and uses the same modern stack (TypeScript + React Ink + Bun). It provides a minimal, readable learning model for developers, removing commercial complexity and helping beginners quickly understand the core mechanics of LLM conversation loops, tool use (function calling), and terminal UI rendering.
