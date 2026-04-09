@@ -221,12 +221,12 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             setMessages([...newMessages, errorMsg]);
             setHistory(prev => {
               const newHist = [...prev];
-              if (finishedResponse) newHist.push({ role: 'assistant', content: finishedResponse });
               newHist.push(errorMsg);
               return newHist;
             });
             setCurrentStream('');
             setFinishedResponse(null);
+            setActiveTools([]); // Clear any stuck active tools
             
             setAppState('error');
             setTimeout(() => setAppState('idle'), 3000);
@@ -238,12 +238,12 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
       setMessages([...newMessages, fatalErrorMsg]);
       setHistory(prev => {
         const newHist = [...prev];
-        if (finishedResponse) newHist.push({ role: 'assistant', content: finishedResponse });
         newHist.push(fatalErrorMsg);
         return newHist;
       });
       setCurrentStream('');
       setFinishedResponse(null);
+      setActiveTools([]); // Clear any stuck active tools
       
       setAppState('error');
       setTimeout(() => setAppState('idle'), 3000);
