@@ -13,25 +13,16 @@ async function main() {
       const { unmount } = render(
         <SetupWizard onComplete={(baseUrl, modelName, apiKey) => {
           saveConfiguration(baseUrl, modelName, apiKey);
-          unmount();
-          resolve();
+          // Small delay before unmounting to ensure Ink cleanly flushes its final render
+          setTimeout(() => {
+            unmount();
+            resolve();
+          }, 100);
         }} />
       );
     });
     config = getConfiguration();
   }
-
-  // Ensure stdin is active so Node.js event loop doesn't exit prematurely before Ink mounts.
-  // This is required whether we ran the setup wizard (readline) or not.
-  process.stdin.resume();
-  if (typeof process.stdin.ref === 'function') {
-    process.stdin.ref(); // 💡 Crucial: prevent Node.js from unref-ing stdin and exiting!
-  }
-  
-  // 💡 Force the event loop to stay alive during the async transition phase
-  // (e.g. loading MCP clients, skills) before React Ink mounts.
-  const keepAlive = setInterval(() => {}, 1000);
-  setTimeout(() => clearInterval(keepAlive), 5000); // Clear after 5s assuming Ink has mounted
 
   const args = process.argv.slice(2);
   const isDev = args.includes('--dev');
