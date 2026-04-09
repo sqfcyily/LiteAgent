@@ -7,9 +7,6 @@ async function askQuestion(query: string): Promise<string> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise(resolve => rl.question(query, ans => { 
     rl.close(); 
-    // Resume stdin immediately to prevent the Node.js event loop from exiting 
-    // during subsequent async operations before Ink mounts.
-    process.stdin.resume();
     resolve(ans); 
   }));
 }
@@ -25,6 +22,15 @@ async function main() {
 
     saveConfiguration(baseUrl, modelName, apiKey);
     config = getConfiguration();
+    
+    // Crucial cleanup: readline hijacks keypress events and raw mode.
+    // We must completely wipe its traces and explicitly resume stdin 
+    // so React Ink can safely take over the terminal without immediately exiting or freezing.
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(true);
+    }
+    process.stdin.removeAllListeners('keypress');
+    process.stdin.resume();
   }
 
   const args = process.argv.slice(2);
