@@ -613,9 +613,12 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
                     setNewModel({ baseUrl: '', name: '', apiKey: '' });
                   } else {
                     const idx = parseInt(item.value, 10);
-                    const selected = availableModels[idx];
+                    // Use getModels() to bypass any stale closures of availableModels
+                    const freshModels = getModels();
+                    const selected = freshModels[idx] || availableModels[idx];
                     setActiveModel(selected);
-                    setCurrentConfig(getConfiguration());
+                    // Use functional update to preserve runtime states like isDev
+                    setCurrentConfig(prev => ({ ...prev, ...getConfiguration() }));
                     setHistory(prev => [...prev, { role: 'assistant', content: `✅ Model switched to **${selected.name}**` }]);
                     setAppState('idle');
                   }
@@ -659,7 +662,8 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
                   if(v.trim()) {
                     const m = { ...newModel, apiKey: v.trim() };
                     setActiveModel(m);
-                    setCurrentConfig(getConfiguration());
+                    // Use functional update to preserve runtime states like isDev
+                    setCurrentConfig(prev => ({ ...prev, ...getConfiguration() }));
                     setHistory(prev => [...prev, { role: 'assistant', content: `✅ New model added and switched to **${m.name}**` }]);
                     setAppState('idle');
                   } else {
