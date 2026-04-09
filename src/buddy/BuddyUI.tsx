@@ -65,6 +65,49 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
   const [finishedResponse, setFinishedResponse] = useState<string | null>(null);
   const [activeTools, setActiveTools] = useState<Array<{ id: string, name: string, args: string }>>([]);
 
+  const skillTool = tools.find(t => t.function.name === 'Skill');
+  const skillSuggestions = skillTool ? skillTool.function.description.split('\n')
+    .filter(line => line.startsWith('- '))
+    .map(line => {
+      const match = line.match(/^- ([^:]+):?(.*)$/);
+      if (match) {
+        const skillName = match[1].split(' ')[0]; // remove args part if any
+        return { name: `/${skillName}`, description: `Skill: ${match[2].trim() || skillName}` };
+      }
+      return null;
+    }).filter(Boolean) as Array<{ name: string, description: string }> : [];
+
+  const COMMAND_SUGGESTIONS = [
+    { name: '/mode', description: 'Switch or add AI models' },
+    { name: '/dev', description: 'Toggle developer mode logs' },
+    { name: '/clear', description: 'Clear conversation history' },
+    { name: '/exit', description: 'Exit LiteAgent' },
+    ...skillSuggestions
+  ];
+
+  const activeSuggestions = input.startsWith('/') 
+    ? COMMAND_SUGGESTIONS.filter(c => c.name.startsWith(input))
+    : [];
+
+  const [suggestionIndex, setSuggestionIndex] = useState(0);
+
+  // Reset suggestion index when input changes
+  useEffect(() => {
+    setSuggestionIndex(0);
+  }, [input]);
+
+  useInput((ch, key) => {
+    if (activeSuggestions.length > 0) {
+      if (key.upArrow) {
+        setSuggestionIndex(prev => Math.max(0, prev - 1));
+      } else if (key.downArrow) {
+        setSuggestionIndex(prev => Math.min(activeSuggestions.length - 1, prev + 1));
+      } else if (key.tab) {
+        setInput(activeSuggestions[suggestionIndex].name + ' ');
+      }
+    }
+  });
+
   // We keep debugLogs in state in case we want to show a counter or indicator, but we will write to file.
   const [debugLogs, setDebugLogs] = useState<any[]>([]);
 
@@ -97,8 +140,23 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
   const handleSubmit = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit') {
+
+    // Auto-complete on Enter if typing a partial slash command
+    if (trimmed.startsWith('/') && activeSuggestions.length > 0) {
+      const exactMatch = COMMAND_SUGGESTIONS.find(c => c.name === trimmed);
+      if (!exactMatch) {
+        setInput(activeSuggestions[suggestionIndex].name + ' ');
+        return; // Wait for user to press Enter again or add arguments
+      }
+    }
+
+    if (trimmed.toLowerCase() === 'exit' || trimmed.toLowerCase() === 'quit' || trimmed.toLowerCase() === '/exit') {
       exit();
+      return;
+    }
+    if (trimmed.toLowerCase() === '/clear') {
+      setHistory([]);
+      setInput('');
       return;
     }
     if (trimmed.toLowerCase() === '/dev') {
@@ -113,13 +171,22 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
       return;
     }
 
+    let finalInputText = text;
+    // Check if it's a skill shortcut
+    if (trimmed.startsWith('/') && !['/exit', '/quit', '/clear', '/dev', '/mode'].includes(trimmed.toLowerCase().split(' ')[0])) {
+      const parts = trimmed.split(' ');
+      const skillName = parts[0].slice(1);
+      const args = parts.slice(1).join(' ');
+      finalInputText = `Execute the skill: ${skillName} ${args ? `with arguments: ${args}` : ''}`;
+    }
+
     let currentHist = [...history];
     if (finishedResponse) {
       currentHist.push({ role: 'assistant', content: finishedResponse });
     }
 
-    const userMsg = { role: 'user' as const, content: text };
-    currentHist.push(userMsg);
+    const userMsg = { role: 'user' as const, content: finalInputText };
+    currentHist.push({ role: 'user' as const, content: text }); // keep original shortcut in UI
     setHistory(currentHist);
 
     const newMessages = [...messages, userMsg];
@@ -480,6 +547,24 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
         {/* Input Area (Always rendered at the bottom) */}
         {(appState === 'idle' || appState === 'success' || appState === 'error') && (
           <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="gray" paddingX={1} paddingTop={0} paddingBottom={0}>
+            
+            {/* Slash Command Suggestions */}
+            {activeSuggestions.length > 0 && (
+              <Box flexDirection="column" marginBottom={1} paddingLeft={2}>
+                {activeSuggestions.map((cmd, i) => (
+                  <Box key={cmd.name} flexDirection="row">
+                    <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
+                      {i === suggestionIndex ? '❯ ' : '  '}
+                    </Text>
+                    <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
+                      {cmd.name.padEnd(10, ' ')}
+                    </Text>
+                    <Text color="gray" dimColor> - {cmd.description}</Text>
+                  </Box>
+                ))}
+              </Box>
+            )}
+
             {/* Status Bar */}
             <Box marginBottom={0} justifyContent="space-between">
               <Box>
