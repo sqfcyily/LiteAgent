@@ -2,24 +2,6 @@
 
 # LiteAgent
 
-**Table of Contents**
-- [🌟 Key Features](#-key-features)
-- [🚀 Getting Started](#-getting-started)
-  - [Option 1: Install via npm (Recommended)](#option-1-install-via-npm-recommended)
-  - [Option 2: Run from source with Bun](#option-2-run-from-source-with-bun)
-  - [📁 Configuration Directory (Auto-created)](#-configuration-directory-auto-created)
-  - [🧩 How to Add a SKILL](#-how-to-add-a-skill)
-  - [🔍 Dev Mode & Log Analysis](#-dev-mode--log-analysis)
-- [📂 Project Structure](#-project-structure)
-- [🧠 Core Architecture & Logic](#-core-architecture--logic)
-  - [1. Conversation Main Loop](#1-conversation-main-loop)
-  - [2. Tool Invocation](#2-tool-invocation)
-  - [3. Skill Loading](#3-skill-loading)
-  - [4. Fork Mode Design](#4-fork-mode-design)
-- [📄 License](#-license)
-
----
-
 LiteAgent is a lightweight AI Agent Harness CLI framework.
 
 This project is heavily inspired by Anthropic's official **Claude Code** Agent Harness architecture and uses the same modern stack (TypeScript + React Ink + Bun). It provides a minimal, readable learning model for developers, removing commercial complexity and helping beginners quickly understand the core mechanics of LLM conversation loops, tool use (function calling), and terminal UI rendering.

@@ -2,24 +2,6 @@
 
 # LiteAgent
 
-**目录 / Table of Contents**
-- [🌟 核心特性](#-核心特性)
-- [🚀 开始使用](#-开始使用)
-  - [方式一：通过 NPM 直接运行（推荐）](#方式一通过-npm-直接运行推荐)
-  - [方式二：通过源码与 Bun 运行](#方式二通过源码与-bun-运行)
-  - [📁 配置目录（自动创建）](#-配置目录自动创建)
-  - [🧩 如何添加 SKILL](#-如何添加-skill)
-  - [🔍 开发者模式（Dev Mode）与日志分析](#-开发者模式dev-mode与日志分析)
-- [📂 项目目录说明](#-项目目录说明)
-- [🧠 核心架构与逻辑说明](#-核心架构与逻辑说明)
-  - [1. 对话主循环 (Conversation Main Loop)](#1-对话主循环-conversation-main-loop)
-  - [2. 工具调用 (Tool Invocation)](#2-工具调用-tool-invocation)
-  - [3. Skill 加载 (Skill Loading)](#3-skill-加载-skill-loading)
-  - [4. Fork 模式设计 (Fork Mode Design)](#4-fork-模式设计-fork-mode-design)
-- [📄 开源协议](#-开源协议)
-
----
-
 LiteAgent 是一个轻量级的 AI Agent Harness（智能体运行时支架）CLI 框架。
 
 本项目深度参考了 Anthropic 官方发布的 **Claude Code** 的架构设计，并采用了与其相同的现代前端与 Node.js 技术栈（TypeScript + React Ink + Bun）。本项目的核心目标是为开发者提供一个极简、易读的 Agent 学习模型，剥离复杂的商业化冗余代码，帮助初学者快速掌握大语言模型（LLM）对话主循环、工具调用（Tool Use/Function Calling）以及终端 UI 渲染的核心逻辑。
