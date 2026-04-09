@@ -22,19 +22,22 @@ async function main() {
 
     saveConfiguration(baseUrl, modelName, apiKey);
     config = getConfiguration();
-    
-    // Crucial cleanup: readline hijacks keypress events and raw mode.
-    // We must completely wipe its traces so React Ink can safely take over the terminal
-    // without immediately exiting or freezing.
-    if (process.stdin.isTTY) {
-      process.stdin.setRawMode(true);
-    }
-    process.stdin.removeAllListeners('keypress');
   }
+
+  // Crucial cleanup: readline hijacks keypress events and raw mode.
+  // We must completely wipe its traces so React Ink can safely take over the terminal
+  // without immediately exiting or freezing.
+  // We do this globally because even if the setup wizard didn't run this time, 
+  // Node.js or the terminal might be in an inconsistent TTY state.
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(true);
+  }
+  process.stdin.removeAllListeners('keypress');
 
   // Ensure stdin is active so Node.js event loop doesn't exit prematurely before Ink mounts.
   // This is required whether we ran the setup wizard (readline) or not.
   process.stdin.resume();
+  process.stdin.setEncoding('utf8');
   
   // 💡 Force the event loop to stay alive during the async transition phase
   // (e.g. loading MCP clients, skills) before React Ink mounts.
