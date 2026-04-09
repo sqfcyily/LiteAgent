@@ -10,6 +10,7 @@
   - [📁 Configuration Directory (Auto-created)](#-configuration-directory-auto-created)
   - [🧩 How to Add a SKILL](#-how-to-add-a-skill)
   - [🔍 Dev Mode & Log Analysis](#-dev-mode--log-analysis)
+- [📂 Project Structure](#-project-structure)
 - [🧠 Core Architecture & Logic](#-core-architecture--logic)
   - [1. Conversation Main Loop](#1-conversation-main-loop)
   - [2. Tool Invocation](#2-tool-invocation)
@@ -101,6 +102,25 @@ For developers who want to study the conversation flow, API payloads, and event 
   - When enabled, LiteAgent writes `lite-agent-dev.log` to the **current working directory**.
 - **Why it matters**
   - The log includes LLM requests, tool calls, context compaction, and other runtime details—useful for debugging prompts and tool execution.
+
+---
+
+## 📂 Project Structure
+
+```text
+LiteAgent/
+├── src/
+│   ├── buddy/            # React Ink terminal UI layer (rendering, input handling, setup wizard)
+│   ├── commands/         # CLI command entry parsing
+│   ├── config/           # Config file I/O and global model state management
+│   ├── mcp/              # Model Context Protocol (MCP) clients and tool integration
+│   ├── services/         # Agent core driver layer (includes the agentEngine main loop)
+│   ├── skills/           # Dynamic Skill loader (reads and parses custom skill workflows)
+│   ├── tools/            # Built-in system tools (Bash execution, file I/O, permissions, etc.)
+│   └── main.tsx          # Application main entry point
+├── package.json          # Project dependencies and NPM scripts
+└── tsconfig.json         # TypeScript compiler configuration
+```
 
 ---
 
