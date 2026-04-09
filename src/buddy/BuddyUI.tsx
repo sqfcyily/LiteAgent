@@ -38,6 +38,50 @@ type HistoryItem =
   | { role: 'user' | 'assistant'; content: string }
   | { role: 'tool'; toolName: string; args: string; result?: string; isError?: boolean };
 
+const CommandSuggestions: React.FC<{ activeSuggestions: any[], suggestionIndex: number }> = ({ activeSuggestions, suggestionIndex }) => {
+  const [terminalWidth, setTerminalWidth] = useState(process.stdout.columns || 80);
+
+  useEffect(() => {
+    const handleResize = () => setTerminalWidth(process.stdout.columns || 80);
+    process.stdout.on('resize', handleResize);
+    return () => {
+      process.stdout.off('resize', handleResize);
+    };
+  }, []);
+
+  if (activeSuggestions.length === 0) return null;
+
+  return (
+    <Box flexDirection="column" marginBottom={1} paddingLeft={2}>
+      {activeSuggestions.map((cmd, i) => {
+        const maxCmdWidth = Math.max(...activeSuggestions.map(c => c.name.length));
+        const prefixStr = i === suggestionIndex ? '❯ ' : '  ';
+        const cmdStr = cmd.name.padEnd(maxCmdWidth, ' ');
+        
+        const prefixTotal = 2 + 2 + maxCmdWidth + 3;
+        const maxDescWidth = Math.max(10, terminalWidth - prefixTotal - 2);
+
+        let descStr = stripAnsi(cmd.description);
+        if (descStr.length > maxDescWidth) {
+          descStr = descStr.substring(0, maxDescWidth - 3) + '...';
+        }
+
+        return (
+          <Box key={cmd.name} flexDirection="row">
+            <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
+              {prefixStr}
+            </Text>
+            <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
+              {cmdStr}
+            </Text>
+            <Text color="gray" dimColor> - {descStr}</Text>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+};
+
 const LiteAgentApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
   const { exit } = useApp();
 
@@ -80,26 +124,12 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
 
   const COMMAND_SUGGESTIONS = [
     { name: '/mode', description: 'Switch or add AI models' },
-    { name: '/dev', description: 'Toggle developer mode logs' },
-    { name: '/clear', description: 'Clear conversation history' },
-    { name: '/exit', description: 'Exit LiteAgent' },
-    ...skillSuggestions
+    { name: '/dev', description: 'Toggle developer mode logs' }
   ];
 
   const activeSuggestions = input.startsWith('/') 
     ? COMMAND_SUGGESTIONS.filter(c => c.name.startsWith(input))
     : [];
-
-  // Get terminal dimensions for dynamic truncation
-  const [terminalWidth, setTerminalWidth] = useState(process.stdout.columns || 80);
-
-  useEffect(() => {
-    const handleResize = () => setTerminalWidth(process.stdout.columns || 80);
-    process.stdout.on('resize', handleResize);
-    return () => {
-      process.stdout.off('resize', handleResize);
-    };
-  }, []);
 
   const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -116,6 +146,9 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
         setSuggestionIndex(prev => Math.min(activeSuggestions.length - 1, prev + 1));
       } else if (key.tab) {
         setInput(activeSuggestions[suggestionIndex].name + ' ');
+      } else if (key.return) {
+        // If it's an exact match without args, we might want to auto-execute
+        // But the exact match logic is already in handleSubmit. We can let handleSubmit handle it.
       }
     }
   });
@@ -157,8 +190,34 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
     if (trimmed.startsWith('/') && activeSuggestions.length > 0) {
       const exactMatch = COMMAND_SUGGESTIONS.find(c => c.name === trimmed);
       if (!exactMatch) {
-        setInput(activeSuggestions[suggestionIndex].name + ' ');
-        return; // Wait for user to press Enter again or add arguments
+        // Auto-select and immediately execute if no args are needed for /mode or /dev
+        const selectedCmd = activeSuggestions[suggestionIndex].name;
+        if (selectedCmd === '/mode' || selectedCmd === '/dev' || selectedCmd === '/clear' || selectedCmd === '/exit') {
+          setInput(''); // Clear input
+          // Dispatch immediately
+          if (selectedCmd === '/exit') {
+            exit();
+            return;
+          }
+          if (selectedCmd === '/clear') {
+            setHistory([]);
+            return;
+          }
+          if (selectedCmd === '/mode') {
+            setAvailableModels(getModels());
+            setAppState('select_mode');
+            return;
+          }
+          if (selectedCmd === '/dev') {
+            const newDevMode = !currentConfig.isDev;
+            setCurrentConfig(prev => ({ ...prev, isDev: newDevMode }));
+            setHistory(prev => [...prev, { role: 'assistant', content: newDevMode ? 'ℹ️ Dev mode logs are now written to `lite-agent-dev.log` in your current directory. Use `tail -f lite-agent-dev.log` in another terminal to monitor.' : 'ℹ️ Dev mode disabled.' }]);
+            return;
+          }
+        }
+        
+        setInput(selectedCmd + ' ');
+        return; // Wait for user to press Enter again if they didn't auto-execute
       }
     }
 
@@ -172,7 +231,9 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
       return;
     }
     if (trimmed.toLowerCase() === '/dev') {
-      setHistory(prev => [...prev, { role: 'assistant', content: 'ℹ️ Dev mode logs are now written to `lite-agent-dev.log` in your current directory. Use `tail -f lite-agent-dev.log` in another terminal to monitor.' }]);
+      const newDevMode = !currentConfig.isDev;
+      setCurrentConfig(prev => ({ ...prev, isDev: newDevMode }));
+      setHistory(prev => [...prev, { role: 'assistant', content: newDevMode ? 'ℹ️ Dev mode logs are now written to `lite-agent-dev.log` in your current directory. Use `tail -f lite-agent-dev.log` in another terminal to monitor.' : 'ℹ️ Dev mode disabled.' }]);
       setInput('');
       return;
     }
@@ -561,37 +622,7 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
           <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="gray" paddingX={1} paddingTop={0} paddingBottom={0}>
             
             {/* Slash Command Suggestions */}
-            {activeSuggestions.length > 0 && (
-              <Box flexDirection="column" marginBottom={1} paddingLeft={2}>
-                {activeSuggestions.map((cmd, i) => {
-                  const maxCmdWidth = Math.max(...activeSuggestions.map(c => c.name.length));
-                  const prefixStr = i === suggestionIndex ? '❯ ' : '  ';
-                  const cmdStr = cmd.name.padEnd(maxCmdWidth, ' ');
-                  
-                  // Calculate remaining space for description
-                  // 2 (paddingLeft) + 2 (prefixStr) + maxCmdWidth + 3 (' - ') = prefixTotal
-                  const prefixTotal = 2 + 2 + maxCmdWidth + 3;
-                  const maxDescWidth = Math.max(10, terminalWidth - prefixTotal - 2); // 2 for right margin
-
-                  let descStr = stripAnsi(cmd.description);
-                  if (descStr.length > maxDescWidth) {
-                    descStr = descStr.substring(0, maxDescWidth - 3) + '...';
-                  }
-
-                  return (
-                    <Box key={cmd.name} flexDirection="row">
-                      <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
-                        {prefixStr}
-                      </Text>
-                      <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
-                        {cmdStr}
-                      </Text>
-                      <Text color="gray" dimColor> - {descStr}</Text>
-                    </Box>
-                  );
-                })}
-              </Box>
-            )}
+            <CommandSuggestions activeSuggestions={activeSuggestions} suggestionIndex={suggestionIndex} />
 
             {/* Status Bar */}
             <Box marginBottom={0} justifyContent="space-between">
