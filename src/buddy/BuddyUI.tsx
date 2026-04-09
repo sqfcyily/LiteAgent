@@ -411,19 +411,21 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
                 { label: 'Cancel', value: 'cancel' }
               ]} 
               onSelect={(item) => {
-                if (item.value === 'cancel') {
-                  setAppState('idle');
-                } else if (item.value === 'add_new') {
-                  setAppState('add_mode_url');
-                  setNewModel({ baseUrl: '', name: '', apiKey: '' });
-                } else {
-                  const idx = parseInt(item.value, 10);
-                  const selected = availableModels[idx];
-                  setActiveModel(selected);
-                  setCurrentConfig(getConfiguration());
-                  setHistory(prev => [...prev, { role: 'assistant', content: `✅ Model switched to **${selected.name}**` }]);
-                  setAppState('idle');
-                }
+                setTimeout(() => {
+                  if (item.value === 'cancel') {
+                    setAppState('idle');
+                  } else if (item.value === 'add_new') {
+                    setAppState('add_mode_url');
+                    setNewModel({ baseUrl: '', name: '', apiKey: '' });
+                  } else {
+                    const idx = parseInt(item.value, 10);
+                    const selected = availableModels[idx];
+                    setActiveModel(selected);
+                    setCurrentConfig(getConfiguration());
+                    setHistory(prev => [...prev, { role: 'assistant', content: `✅ Model switched to **${selected.name}**` }]);
+                    setAppState('idle');
+                  }
+                }, 0);
               }} 
             />
           </Box>
@@ -436,7 +438,7 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
             <Box>
               <Text color="yellow" bold>❯ </Text>
               {/* @ts-ignore */}
-              <TextInput value={newModel.baseUrl} onChange={(v) => setNewModel(p => ({ ...p, baseUrl: v }))} onSubmit={(v) => { if(v.trim()) setAppState('add_mode_name'); else setAppState('idle'); }} />
+              <TextInput key="input-add-url" focus={appState === 'add_mode_url'} value={newModel.baseUrl} onChange={(v) => setNewModel(p => ({ ...p, baseUrl: v }))} onSubmit={(v) => { if(v.trim()) setTimeout(() => setAppState('add_mode_name'), 0); else setTimeout(() => setAppState('idle'), 0); }} />
             </Box>
           </Box>
         )}
@@ -447,7 +449,7 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
             <Box>
               <Text color="yellow" bold>❯ </Text>
               {/* @ts-ignore */}
-              <TextInput value={newModel.name} onChange={(v) => setNewModel(p => ({ ...p, name: v }))} onSubmit={(v) => { if(v.trim()) setAppState('add_mode_key'); else setAppState('idle'); }} />
+              <TextInput key="input-add-name" focus={appState === 'add_mode_name'} value={newModel.name} onChange={(v) => setNewModel(p => ({ ...p, name: v }))} onSubmit={(v) => { if(v.trim()) setTimeout(() => setAppState('add_mode_key'), 0); else setTimeout(() => setAppState('idle'), 0); }} />
             </Box>
           </Box>
         )}
@@ -458,16 +460,18 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
             <Box>
               <Text color="yellow" bold>❯ </Text>
               {/* @ts-ignore */}
-              <TextInput mask="*" value={newModel.apiKey} onChange={(v) => setNewModel(p => ({ ...p, apiKey: v }))} onSubmit={(v) => { 
-                if(v.trim()) {
-                  const m = { ...newModel, apiKey: v.trim() };
-                  setActiveModel(m);
-                  setCurrentConfig(getConfiguration());
-                  setHistory(prev => [...prev, { role: 'assistant', content: `✅ New model added and switched to **${m.name}**` }]);
-                  setAppState('idle');
-                } else {
-                  setAppState('idle');
-                }
+              <TextInput key="input-add-key" focus={appState === 'add_mode_key'} mask="*" value={newModel.apiKey} onChange={(v) => setNewModel(p => ({ ...p, apiKey: v }))} onSubmit={(v) => { 
+                setTimeout(() => {
+                  if(v.trim()) {
+                    const m = { ...newModel, apiKey: v.trim() };
+                    setActiveModel(m);
+                    setCurrentConfig(getConfiguration());
+                    setHistory(prev => [...prev, { role: 'assistant', content: `✅ New model added and switched to **${m.name}**` }]);
+                    setAppState('idle');
+                  } else {
+                    setAppState('idle');
+                  }
+                }, 0);
               }} />
             </Box>
           </Box>
@@ -495,6 +499,8 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
               <Box flexGrow={1}>
                 {/* @ts-ignore */}
                 <TextInput 
+                  key={`input-${appState}`}
+                  focus={appState === 'idle' || appState === 'success' || appState === 'error'}
                   value={input} 
                   onChange={setInput} 
                   onSubmit={handleSubmit} 

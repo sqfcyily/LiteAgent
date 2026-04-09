@@ -8,12 +8,13 @@
     "dist"
   ],
   "bin": {
-    "liteagent": "dist/main.js"
+    "liteagent": "dist/main.js",
+    "la": "dist/main.js"
   },
   "scripts": {
     "start": "bun run src/main.tsx",
     "dev": "bun run --watch src/main.tsx --dev",
-    "build:bin": "bun build src/main.tsx --compile --outfile liteagent",
+    "build:bin": "bun build src/main.tsx --compile --outfile liteagent && cp liteagent la",
     "build:npm": "bun build src/main.tsx --target=node --outdir=dist --format=esm --sourcemap=external",
     "global:link": "bun link",
     "global:unlink": "bun unlink"
