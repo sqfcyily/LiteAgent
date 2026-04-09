@@ -87,15 +87,24 @@ export function setActiveModel(model: ModelConfig) {
 export function saveConfiguration(baseUrl: string, modelName: string, apiKey: string): void {
   const configContent = `BASE_URL=${baseUrl || 'https://api.openai.com/v1'}\nMODEL_NAME=${modelName || 'gpt-4o'}\nAPI_KEY=${apiKey}\nLANGUAGE=en-US\n`;
   
-  // Ensure the global directory and skills directory exist
-  if (!fs.existsSync(GLOBAL_DIR)) {
-    fs.mkdirSync(GLOBAL_DIR, { recursive: true });
-  }
-  const skillsDir = path.join(GLOBAL_DIR, 'skills');
-  if (!fs.existsSync(skillsDir)) {
-    fs.mkdirSync(skillsDir, { recursive: true });
-  }
+  // Force-update process.env immediately to avoid dotenv caching quirks
+  process.env.BASE_URL = baseUrl || 'https://api.openai.com/v1';
+  process.env.MODEL_NAME = modelName || 'gpt-4o';
+  process.env.API_KEY = apiKey;
+  process.env.LANGUAGE = 'en-US';
 
-  // Always save to global config so it persists across directories
-  fs.writeFileSync(GLOBAL_CONFIG_FILE, configContent, 'utf-8');
+  // If there is a local .agentrc, update it so that the switch takes effect locally
+  if (fs.existsSync(LOCAL_CONFIG_FILE)) {
+    fs.writeFileSync(LOCAL_CONFIG_FILE, configContent, 'utf-8');
+  } else {
+    // Otherwise, ensure the global directory exists and save globally
+    if (!fs.existsSync(GLOBAL_DIR)) {
+      fs.mkdirSync(GLOBAL_DIR, { recursive: true });
+    }
+    const skillsDir = path.join(GLOBAL_DIR, 'skills');
+    if (!fs.existsSync(skillsDir)) {
+      fs.mkdirSync(skillsDir, { recursive: true });
+    }
+    fs.writeFileSync(GLOBAL_CONFIG_FILE, configContent, 'utf-8');
+  }
 }
