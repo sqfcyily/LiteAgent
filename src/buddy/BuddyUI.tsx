@@ -3,6 +3,8 @@ import { render, Box, Text, Static, useInput, useApp } from 'ink';
 import * as fs from 'fs';
 import * as path from 'path';
 import TextInput from 'ink-text-input';
+import SelectInput from 'ink-select-input';
+import { getConfiguration, getModels, setActiveModel, ModelConfig } from '../config/index.js';
 import { Markdown } from '../components/Markdown.js';
 import { runEngine, EngineConfig } from '../services/agentEngine.js';
 import type { EngineEvent, Message, ToolSchema } from '../utils/types.js';
@@ -29,7 +31,7 @@ export class BuddyUI {
 // ---------------------------------------------------------
 // React Root for the Buddy Channel
 // ---------------------------------------------------------
-type AgentState = 'idle' | 'thinking' | 'working' | 'success' | 'error';
+type AgentState = 'idle' | 'thinking' | 'working' | 'success' | 'error' | 'select_mode' | 'add_mode_url' | 'add_mode_name' | 'add_mode_key';
 
 type HistoryItem = 
   | { role: 'user' | 'assistant'; content: string }
@@ -38,11 +40,16 @@ type HistoryItem =
 const LiteAgentApp: React.FC<{ config: EngineConfig, tools: ToolSchema[], skillInstructions: string }> = ({ config, tools, skillInstructions }) => {
   const { exit } = useApp();
 
+  // Model Management State
+  const [currentConfig, setCurrentConfig] = useState<EngineConfig>(config);
+  const [availableModels, setAvailableModels] = useState<ModelConfig[]>([]);
+  const [newModel, setNewModel] = useState<{ baseUrl: string; name: string; apiKey: string }>({ baseUrl: '', name: '', apiKey: '' });
+
   const initialSystemPrompt = `You are LiteAgent, an independent, lightweight and precise AI assistant. 
 IMPORTANT: You must STRICTLY identify yourself ONLY as "LiteAgent". NEVER mention "通义千问", "Qwen", "Alibaba", "OpenAI", "Anthropic", or any other company/model names.
 You are equipped to handle ANY task the user requests—from software development to analysis and beyond. Always use tools when necessary to assist the user effectively. 
 Current Working Directory: ${process.cwd()}
-Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
+Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstructions}`;
   
   const [messages, setMessages] = useState<Message[]>([
     { role: 'system', content: initialSystemPrompt }
@@ -62,11 +69,11 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
   const [debugLogs, setDebugLogs] = useState<any[]>([]);
 
   useEffect(() => {
-    if (config.isDev) {
+    if (currentConfig.isDev) {
       const logPath = path.join(process.cwd(), 'lite-agent-dev.log');
       fs.writeFileSync(logPath, `=== LiteAgent Dev Session Started at ${new Date().toISOString()} ===\n`, 'utf-8');
     }
-  }, [config.isDev]);
+  }, [currentConfig.isDev]);
 
   const isProcessing = appState === 'thinking' || appState === 'working';
 
@@ -99,6 +106,12 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
       setInput('');
       return;
     }
+    if (trimmed.toLowerCase() === '/mode') {
+      setAvailableModels(getModels());
+      setAppState('select_mode');
+      setInput('');
+      return;
+    }
 
     let currentHist = [...history];
     if (finishedResponse) {
@@ -119,12 +132,12 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
     setDebugLogs([]); // Clear logs for new turn
 
     try {
-      const stream = runEngine(newMessages, tools, config);
+      const stream = runEngine(newMessages, tools, currentConfig);
 
       for await (const event of stream) {
         switch (event.type) {
           case 'debug':
-            if (config.isDev) {
+            if (currentConfig.isDev) {
               const logPath = path.join(process.cwd(), 'lite-agent-dev.log');
               const logEntry = `[${new Date().toISOString()}] ${event.event === 'request' ? '↑ API Request' : '↓ API Response'} (Loop ${event.data.loop})\n${JSON.stringify(event.data, null, 2)}\n\n`;
               fs.appendFileSync(logPath, logEntry, 'utf-8');
@@ -387,6 +400,79 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
           </Box>
         )}
 
+        {/* Model Selection UI */}
+        {appState === 'select_mode' && (
+          <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="cyan" paddingX={1} paddingTop={0} paddingBottom={0}>
+            <Box marginBottom={1}><Text color="cyan" bold>Please select a model or add a new one:</Text></Box>
+            <SelectInput 
+              items={[
+                ...availableModels.map((m, i) => ({ label: `${m.name} (${m.baseUrl})`, value: i.toString() })),
+                { label: '+ Add new model...', value: 'add_new' },
+                { label: 'Cancel', value: 'cancel' }
+              ]} 
+              onSelect={(item) => {
+                if (item.value === 'cancel') {
+                  setAppState('idle');
+                } else if (item.value === 'add_new') {
+                  setAppState('add_mode_url');
+                  setNewModel({ baseUrl: '', name: '', apiKey: '' });
+                } else {
+                  const idx = parseInt(item.value, 10);
+                  const selected = availableModels[idx];
+                  setActiveModel(selected);
+                  setCurrentConfig(getConfiguration());
+                  setHistory(prev => [...prev, { role: 'assistant', content: `✅ Model switched to **${selected.name}**` }]);
+                  setAppState('idle');
+                }
+              }} 
+            />
+          </Box>
+        )}
+
+        {/* Add Model UI */}
+        {appState === 'add_mode_url' && (
+          <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="cyan" paddingX={1} paddingTop={0} paddingBottom={0}>
+            <Box marginBottom={0}><Text color="cyan" bold>Enter BASE_URL (e.g. https://api.openai.com/v1):</Text></Box>
+            <Box>
+              <Text color="yellow" bold>❯ </Text>
+              {/* @ts-ignore */}
+              <TextInput value={newModel.baseUrl} onChange={(v) => setNewModel(p => ({ ...p, baseUrl: v }))} onSubmit={(v) => { if(v.trim()) setAppState('add_mode_name'); else setAppState('idle'); }} />
+            </Box>
+          </Box>
+        )}
+
+        {appState === 'add_mode_name' && (
+          <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="cyan" paddingX={1} paddingTop={0} paddingBottom={0}>
+            <Box marginBottom={0}><Text color="cyan" bold>Enter MODEL_NAME (e.g. gpt-4o):</Text></Box>
+            <Box>
+              <Text color="yellow" bold>❯ </Text>
+              {/* @ts-ignore */}
+              <TextInput value={newModel.name} onChange={(v) => setNewModel(p => ({ ...p, name: v }))} onSubmit={(v) => { if(v.trim()) setAppState('add_mode_key'); else setAppState('idle'); }} />
+            </Box>
+          </Box>
+        )}
+
+        {appState === 'add_mode_key' && (
+          <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="cyan" paddingX={1} paddingTop={0} paddingBottom={0}>
+            <Box marginBottom={0}><Text color="cyan" bold>Enter API_KEY:</Text></Box>
+            <Box>
+              <Text color="yellow" bold>❯ </Text>
+              {/* @ts-ignore */}
+              <TextInput mask="*" value={newModel.apiKey} onChange={(v) => setNewModel(p => ({ ...p, apiKey: v }))} onSubmit={(v) => { 
+                if(v.trim()) {
+                  const m = { ...newModel, apiKey: v.trim() };
+                  setActiveModel(m);
+                  setCurrentConfig(getConfiguration());
+                  setHistory(prev => [...prev, { role: 'assistant', content: `✅ New model added and switched to **${m.name}**` }]);
+                  setAppState('idle');
+                } else {
+                  setAppState('idle');
+                }
+              }} />
+            </Box>
+          </Box>
+        )}
+
         {/* Input Area (Always rendered at the bottom) */}
         {(appState === 'idle' || appState === 'success' || appState === 'error') && (
           <Box flexDirection="column" borderTop={true} borderStyle="single" borderColor="gray" paddingX={1} paddingTop={0} paddingBottom={0}>
@@ -394,7 +480,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
             <Box marginBottom={0} justifyContent="space-between">
               <Box>
                 <Text color="green" bold>LiteAgent</Text>
-                <Text color="gray"> │ {config.model} │ {process.cwd()}</Text>
+                <Text color="gray"> │ {currentConfig.model} │ {process.cwd()}</Text>
               </Box>
               <Box>
                 <Text color="gray">Press Ctrl+C to exit</Text>
@@ -412,7 +498,7 @@ Language preference: ${config.language || 'zh-CN'}.\n\n${skillInstructions}`;
                   value={input} 
                   onChange={setInput} 
                   onSubmit={handleSubmit} 
-                  placeholder={config.isDev ? "Type a message... (Logs are in lite-agent-dev.log)" : "Type a message..."} 
+                  placeholder={currentConfig.isDev ? "Type a message... (Logs are in lite-agent-dev.log)" : "Type a message..."} 
                 />
               </Box>
             </Box>
