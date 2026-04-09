@@ -31,6 +31,10 @@ async function main() {
     }
     process.stdin.removeAllListeners('keypress');
     process.stdin.resume();
+    // 💡 Force the event loop to stay alive during the async transition phase
+    // between readline closing and React Ink mounting.
+    const keepAlive = setInterval(() => {}, 1000);
+    setTimeout(() => clearInterval(keepAlive), 5000); // Clear after 5s assuming Ink has mounted
   }
 
   const args = process.argv.slice(2);
