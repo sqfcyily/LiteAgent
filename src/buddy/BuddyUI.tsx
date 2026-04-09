@@ -100,7 +100,9 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
     { role: 'system', content: initialSystemPrompt }
   ]);
   
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([
+    { role: 'assistant', content: 'Welcome to **LiteAgent**! \nType **`/mode`** to select an AI model, **`/dev`** to toggle developer logs, or simply type your request to begin.' }
+  ]);
   const [input, setInput] = useState('');
   
   // Advanced State Tracking
