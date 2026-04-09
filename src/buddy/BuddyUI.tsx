@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import TextInput from 'ink-text-input';
 import SelectInput from 'ink-select-input';
+import stripAnsi from 'strip-ansi';
 import { getConfiguration, getModels, setActiveModel, ModelConfig } from '../config/index.js';
 import { Markdown } from '../components/Markdown.js';
 import { runEngine, EngineConfig } from '../services/agentEngine.js';
@@ -88,6 +89,17 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
   const activeSuggestions = input.startsWith('/') 
     ? COMMAND_SUGGESTIONS.filter(c => c.name.startsWith(input))
     : [];
+
+  // Get terminal dimensions for dynamic truncation
+  const [terminalWidth, setTerminalWidth] = useState(process.stdout.columns || 80);
+
+  useEffect(() => {
+    const handleResize = () => setTerminalWidth(process.stdout.columns || 80);
+    process.stdout.on('resize', handleResize);
+    return () => {
+      process.stdout.off('resize', handleResize);
+    };
+  }, []);
 
   const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -551,17 +563,33 @@ Language preference: ${currentConfig.language || 'zh-CN'}.\n\n${skillInstruction
             {/* Slash Command Suggestions */}
             {activeSuggestions.length > 0 && (
               <Box flexDirection="column" marginBottom={1} paddingLeft={2}>
-                {activeSuggestions.map((cmd, i) => (
-                  <Box key={cmd.name} flexDirection="row">
-                    <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
-                      {i === suggestionIndex ? '❯ ' : '  '}
-                    </Text>
-                    <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
-                      {cmd.name.padEnd(10, ' ')}
-                    </Text>
-                    <Text color="gray" dimColor> - {cmd.description}</Text>
-                  </Box>
-                ))}
+                {activeSuggestions.map((cmd, i) => {
+                  const maxCmdWidth = Math.max(...activeSuggestions.map(c => c.name.length));
+                  const prefixStr = i === suggestionIndex ? '❯ ' : '  ';
+                  const cmdStr = cmd.name.padEnd(maxCmdWidth, ' ');
+                  
+                  // Calculate remaining space for description
+                  // 2 (paddingLeft) + 2 (prefixStr) + maxCmdWidth + 3 (' - ') = prefixTotal
+                  const prefixTotal = 2 + 2 + maxCmdWidth + 3;
+                  const maxDescWidth = Math.max(10, terminalWidth - prefixTotal - 2); // 2 for right margin
+
+                  let descStr = stripAnsi(cmd.description);
+                  if (descStr.length > maxDescWidth) {
+                    descStr = descStr.substring(0, maxDescWidth - 3) + '...';
+                  }
+
+                  return (
+                    <Box key={cmd.name} flexDirection="row">
+                      <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
+                        {prefixStr}
+                      </Text>
+                      <Text color={i === suggestionIndex ? 'cyan' : 'gray'} bold={i === suggestionIndex}>
+                        {cmdStr}
+                      </Text>
+                      <Text color="gray" dimColor> - {descStr}</Text>
+                    </Box>
+                  );
+                })}
               </Box>
             )}
 
