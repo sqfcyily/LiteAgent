@@ -186,14 +186,26 @@
             
             /* 修复移动端终端文字溢出与按钮重叠 */
             .terminal {
-                padding: 1rem;
+                padding: 1.5rem 1rem 1rem 1rem; /* 增加顶部内边距，给三个圆点留出空间 */
                 font-size: 0.8rem;
                 overflow-wrap: break-word;
                 word-wrap: break-word;
                 white-space: pre-wrap;
             }
+            .terminal-header {
+                margin-bottom: 1.5rem; /* 增加小圆点和下方代码的间距 */
+            }
             .code-line {
                 word-break: break-all;
+                display: flex; /* 确保 prompt 和 command 在换行时对齐 */
+                flex-wrap: wrap;
+            }
+            .prompt {
+                margin-right: 0.5rem;
+                flex-shrink: 0; /* 防止 ~ ❯ 被挤压变形 */
+            }
+            .command {
+                flex: 1; /* 让命令内容自适应并换行 */
             }
             .lang-toggle {
                 top: 0.5rem;
